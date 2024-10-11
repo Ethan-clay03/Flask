@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="../../static/navigation.css">
+    </head>
+    <body>
+        <h1>Something</h1>
+    <nav>
+        <a href="{{ url_for('main.index') }}">Home Page</a>
+        <a href="#">Posts</a>
+    </nav>
+    <hr>
+    <div class="content">
+        {% block content %} {% endblock %}
+    </div>
+    </body>
+</html>

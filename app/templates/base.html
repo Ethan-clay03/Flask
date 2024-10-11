@@ -1,0 +1,10 @@
+<body>
+<nav>
+    <a href="{{ url_for('main.index') }}">HOME</a>
+    <a href="#">Posts</a>
+</nav>
+<hr>
+<div class="content">
+    {% block content %} {% endblock %}
+</div>
+</body>

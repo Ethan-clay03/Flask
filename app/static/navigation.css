@@ -1,0 +1,28 @@
+.nav_div img {
+    height: 70px;
+    margin-left: 35px;
+}
+
+.nav_div .navbar ul li {
+    list-style-type: none;
+    display: inherit;
+    flex-direction: row;
+    padding: 5px 0;
+}
+
+.nav_div .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height:70px;
+}
+
+.nav_div .navbar ul {
+    display: flex;
+    justify-content: space-evenly;
+    width:100%;
+}
+
+.nav_div {
+    display: flex;
+}

@@ -1,17 +1,28 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" href="../../static/navigation.css">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='navigation.css')}}">
     </head>
     <body>
-        <h1>Something</h1>
-    <nav>
-        <a href="{{ url_for('main.index') }}">Home Page</a>
-        <a href="#">Posts</a>
-    </nav>
-    <hr>
-    <div class="content">
-        {% block content %} {% endblock %}
-    </div>
+        <div class="nav_div">
+            <!-- https://images.ctfassets.net/hrltx12pl8hq/7JnR6tVVwDyUM8Cbci3GtJ/bf74366cff2ba271471725d0b0ef418c/shutterstock_376532611-og.jpg -->
+            <img src="{{ url_for('static', filename='images/nav_icon.jpeg')}}">
+            <nav class="navbar">
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Pricing</a></li>
+                    <li><a href="#">Terms of use</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <hr>
+        
+        <h1>Content</h1>
+        <div class="content">
+            {% block content %} {% endblock %}
+        </div>
     </body>
 </html>

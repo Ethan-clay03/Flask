@@ -1,7 +1,15 @@
-{% extends 'navigation.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
-    <div class="content">
-        <h2>Index.html</h2>
+    <div class="date_selector">
+        <h2>Date selector</h2>
+        <input type="date" id="start" name="trip-start" value="{{today}}" min="{{today}}" max="2018-12-31" />
+        <input type="date" id="start" name="trip-end" value="{{tomorrow}}" min="{{tomorrow}}" max="2099-12-31" />
+    </div>
+    <div>
+        <h3>Guarantees</h3>
+    </div>
+    <div>
+        <h3>Example Pricing</h3>
     </div>
 {% endblock %}

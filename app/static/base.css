@@ -1,28 +1,36 @@
-.nav_div img {
+.navigation img {
     height: 70px;
     margin-left: 35px;
 }
 
-.nav_div .navbar ul li {
+.navigation .navbar ul li {
     list-style-type: none;
     display: inherit;
     flex-direction: row;
     padding: 5px 0;
+    color: #EBC815;
 }
 
-.nav_div .navbar {
+.nav_list_item:hover {
+    background-color: black;
+}
+
+.navigation .navbar {
     display: flex;
     align-items: center;
     justify-content: center;
     height:70px;
-}
-
-.nav_div .navbar ul {
-    display: flex;
-    justify-content: space-evenly;
     width:100%;
 }
 
-.nav_div {
+.navigation .navbar ul {
     display: flex;
+    justify-content: space-evenly;
+    width:100%;
+    font-style: ;
+}
+
+.navigation {
+    display: flex;
+    background-color: #AEEB15;
 }

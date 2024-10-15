@@ -14,8 +14,8 @@ def create_app(config_class=Config):
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
     
-    from app.posts import bp as posts_bp
-    app.register_blueprint(posts_bp, url_prefix='/posts')
+    from app.bookings import bp as bookings_bp
+    app.register_blueprint(bookings_bp, url_prefix='/bookings')
 
     @app.route('/test/')
     def test_page():

@@ -4,32 +4,46 @@
 <html>
     <head>
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='base.css')}}">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Horizon Travels</title>
     </head>
     <body>
-        {% block navigation %}
-        <div class="navigation">
-            <!-- https://images.ctfassets.net/hrltx12pl8hq/7JnR6tVVwDyUM8Cbci3GtJ/bf74366cff2ba271471725d0b0ef418c/shutterstock_376532611-og.jpg -->
-            <img src="{{ url_for('static', filename='images/nav_icon.jpeg')}}">
-            <nav class="navbar">
-                <ul>
-                    <li class="nav_list_item"><a href="#">Home</a></li>
-                    <li class="nav_list_item"><a href="#">About</a></li>
-                    <li class="nav_list_item"><a href="#">Pricing</a></li>
-                    <li class="nav_list_item"><a href="#">Terms of use</a></li>
-                    <li class="nav_list_item"><a href="#">Contact</a></li>
-                </ul>
-            </nav>
-        </div>
-        {% endblock %}
+        <div class="main_content">
+            <div class="wrapper">
+                {% block navigation %}
+                <div class="navigation">
+                    <!-- https://images.ctfassets.net/hrltx12pl8hq/7JnR6tVVwDyUM8Cbci3GtJ/bf74366cff2ba271471725d0b0ef418c/shutterstock_376532611-og.jpg -->
+                    <img src="{{ url_for('static', filename='images/nav_icon.jpeg')}}">
+                    <nav class="navbar">
+                        <ul>
+                            <li class="nav_list_item"><a href="#">Home</a></li>
+                            <li class="nav_list_item"><a href="#">About</a></li>
+                            <li class="nav_list_item"><a href="#">Pricing</a></li>
+                            <li class="nav_list_item"><a href="#">Terms of use</a></li>
+                            <li class="nav_list_item"><a href="#">Contact</a></li>
+                        </ul>
+                    </nav>
+                </div>
+                {% endblock %}
 
-        <div class="content">
-            {% block content %} {% endblock %}
-        </div>
-
-        {% block footer %}
-        <div class="footer">
-            <h3>Footer content</h3>
-        </div>
-        {% endblock %}
+                <div class="content">
+                    {% block content %} {% endblock %}
+                </div>
+            </div>
+            {% block footer %}
+            <footer>
+                <div class="footer">
+                    <div class="row">
+                        <div class="footer_column">About Us</div>
+                        <div class="footer_column">Contact</div>
+                        <div class="footer_column">Login</div>
+                    </div>
+                    <div class="copyright">
+                        <p>&copy; 2024-2025 Horizon Travels</p>
+                    </div>
+                </div>
+            </footer>
+            {% endblock %}
+        </div> 
     </body>
 </html>

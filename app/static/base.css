@@ -1,25 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&display=swap');
+
+/* NAVIGATION BAR CSS */
 .navigation img {
     height: 70px;
     margin-left: 35px;
+    align-self: center;
 }
-
+  
 .navigation .navbar ul li {
     list-style-type: none;
     display: inherit;
     flex-direction: row;
     padding: 5px 0;
-    color: #EBC815;
+}
+
+.nav_list_item a {
+    color: #FBE9D0;
+    font-size: 35px;
+    text-decoration: none;
+    padding: 10px;
 }
 
 .nav_list_item:hover {
-    background-color: black;
+    background-color: #90AEAD;
+    padding: 5px;
 }
 
 .navigation .navbar {
     display: flex;
     align-items: center;
     justify-content: center;
-    height:70px;
+    height: 100px; /* Fix nav bar height */
     width:100%;
 }
 
@@ -27,10 +38,64 @@
     display: flex;
     justify-content: space-evenly;
     width:100%;
-    font-style: ;
+    /* font-style: ; */
 }
 
 .navigation {
     display: flex;
-    background-color: #AEEB15;
+    background-color: #244855;
 }
+
+/** FOOTER CSS */
+
+.footer {
+    text-align: center;
+    background-color: #222222;
+    color: #FBE9D0;
+    margin-top: 40px;
+    padding: 20px 0;
+    
+}
+.footer_column {
+    float: left;
+    width: 33.33%;
+    justify-content: center;
+}
+
+.footer .copyright {
+    padding-top: 30px;
+}
+
+
+/* MAIN CONTENT CSS */
+.main_content {
+    min-height:100vh; 
+    display:flex; 
+    flex-direction:column; 
+    justify-content:space-between;
+}
+
+.content {
+    flex: 1; /* Allows content to expand */
+}
+
+/* 
+    Remove default padding which occurs around the nav bar on some browsers such as Edge and setup default font. 
+    This should be changed where required on inherited elements 
+*/
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Afacad Flux", sans-serif;
+    font-weight: 100;
+}
+
+/* HEX codes for colours used through out website don't delete */
+
+/* Colour pallete taken from https://visme.co/blog/website-color-schemes/
+244855 Dark Blue
+E64833 Red
+874F41 Brown
+90AEAD Light Blue
+FBE9D0 Cream
+*/

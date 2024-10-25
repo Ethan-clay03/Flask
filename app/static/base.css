@@ -79,6 +79,10 @@
     flex: 1; /* Allows content to expand */
 }
 
+.wrapper {
+    flex: 1; 
+}
+
 /* 
     Remove default padding which occurs around the nav bar on some browsers such as Edge and setup default font. 
     This should be changed where required on inherited elements 

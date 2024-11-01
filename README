@@ -1,0 +1,12 @@
+# To run locally
+
+. .venv/bin/activate
+
+flask run   (Will run on 127.0.0.1:5000)
+
+
+# To apply database changes
+flask db upgrade
+
+#Creating new migration file
+flask db migrate -m "Add age column to User model"

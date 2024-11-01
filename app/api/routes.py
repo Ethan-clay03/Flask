@@ -18,7 +18,7 @@ def get_user_by_id(id):
         }
         return jsonify(user_data), 200
     
-    #If something falls over throw nice error
+    #If something falls over throw nice error for debugging, will change for admin only users to see errors otherwise throw generic 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

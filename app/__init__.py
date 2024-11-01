@@ -3,9 +3,10 @@
 from flask import Flask
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
-# For some reason the db needs to be initalised outside the class
 db = SQLAlchemy()
+migrate = Migrate()
 
 def create_app(config_class=Config):    
     app = Flask(__name__)
@@ -21,6 +22,9 @@ def create_app(config_class=Config):
     
     app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{db_user}:{db_password}@localhost/{db_name}".format(db_user=db_user, db_password=db_password, db_name=db_name)
     db.init_app(app)
+    
+    #Run Flask migrations if any available
+    migrate.init_app(app, db)
 
     # Register blueprints and url prefixes
     from app.main import bp as main_bp

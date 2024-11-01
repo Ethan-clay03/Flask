@@ -94,6 +94,22 @@ body {
     font-weight: 100;
 }
 
+
+
+/*
+    Show/hide the hamburger menu depending on the screen size which is being used
+*/
+@media screen and (max-width: 880px) {
+    .navigation {
+        display: none;
+    }
+
+    .mobile_nav {
+        display:flex;
+    }
+}
+
+
 /* HEX codes for colours used through out website don't delete */
 
 /* Colour pallete taken from https://visme.co/blog/website-color-schemes/

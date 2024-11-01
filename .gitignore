@@ -1,2 +1,4 @@
+#NEED TO FIX, SHOULD NOT BE PUSHING PYCACHE TO GIT
+
 __pycache__/
 *__pycache__

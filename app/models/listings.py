@@ -17,3 +17,21 @@ class Listings(db.Model):
     @classmethod
     def get_all_listings(cls):
         return cls.query.all()    
+    
+    @classmethod
+    def create_listing(cls, depart_location, depart_time, destination_location, destination_time, fair_cost, transport_type, business_tickets, economy_tickets):
+        new_flight = cls(depart_location=depart_location,
+                         depart_time=depart_time,
+                         destination_location=destination_location,
+                         destination_time=destination_time,
+                         fair_cost=fair_cost,
+                         transport_type=transport_type,
+                         business_tickets=business_tickets,
+                         economy_tickets=economy_tickets)
+
+        # Add the new flight to the session and commit
+        db.session.add(new_flight)
+        db.session.commit()
+        return new_flight
+        #return cls.query.all()    
+    

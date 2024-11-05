@@ -2,7 +2,31 @@
 
 {% block content %}
     <div class="content">
-        <div style="margin-left:50px">Create Listings Logic</div>
-        <div style="margin-left:50px">{{all_listings}}</div>
+        <div class="content">
+            <p>{{all_listings}}</p>
+            <h1>All Listings</h1>
+            <table border="1">
+                <thead>
+                    <tr>
+                        {% for column in column_names %}
+                            <th>{{ column.replace('_', ' ').title() }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for listing in all_listings %}
+                        <tr>
+                            {% for column in column_names %}
+                                <td>{{ getattr(listing, column) }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="{{ column_names | length }}">No listings available.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 {% endblock %}

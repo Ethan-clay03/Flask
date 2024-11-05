@@ -15,7 +15,7 @@ def create_app(config_class=Config):
     #ONLY TURN ON FOR DEBUGGING
     app.config['DEBUG'] = True
 
-    # Database connection , TO DO: Encrypt and move into .env
+    # Database connection , TO DO: Encrypt and move into .env fix where connection only works when remoted into database
     db_user = 'ethan2clay'
     db_password = 'Ethan2claY10+$++'
     db_name = 'ethan2clay_prj'

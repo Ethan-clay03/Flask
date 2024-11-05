@@ -12,7 +12,7 @@ def get_user_by_id(id):
             return jsonify({'error': 'User not found'}), 404
         
         user_data = {
-            'id': result.user_id,
+            'id': result.id,
             'username': result.username,
             'email': result.email
         }
@@ -25,13 +25,14 @@ def get_user_by_id(id):
 @bp.route('/user/create', methods=['GET'])
 def create_user():
     try:
+        #Hardcoded for now as when running upgrade on new db no users exist yet, will change at some point
         result = User.create_user('ethan_root', 'ethan2.clay@live.uwe.ac.uk', 'password1234', 1)
 
         if result is None:
             return jsonify({'error': 'User not found'}), 404
         
         user_data = {
-            'id': result.user_id,
+            'id': result.id,
             'username': result.username,
             'email': result.email
         }

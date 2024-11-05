@@ -110,6 +110,30 @@ body {
 }
 
 
+/* 
+    Button Css
+*/
+
+.button_1 {
+    background-color: #244855; 
+    border: none;
+    border-radius: 12px;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.button_1:hover {
+    background-color: #90AEAD;
+}
+
+
+
+
 /* HEX codes for colours used through out website don't delete */
 
 /* Colour pallete taken from https://visme.co/blog/website-color-schemes/

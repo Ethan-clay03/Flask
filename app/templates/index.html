@@ -1,5 +1,10 @@
 {% extends 'base.html' %}
-
+<script>
+import Container from 'react-bootstrap/Container';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import NavDropdown from 'react-bootstrap/NavDropdown';
+</script>
 {% block content %}
     <div class="date_selector">
         <h2>Date selector</h2>
@@ -9,5 +14,13 @@
     <div>
         <h3>Guarantees</h3>
     </div>
+    <div id="like_button_container"></div>
 
+    <!-- Load React. -->
+    <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+
+    <!-- Load our React component. -->
+    <script src="like_button.js"></script>
 {% endblock %}

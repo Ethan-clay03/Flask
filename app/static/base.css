@@ -1,51 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&display=swap');
 
-/* NAVIGATION BAR CSS */
-.navigation img {
-    height: 70px;
-    margin-left: 35px;
-    align-self: center;
-}
-  
-.navigation .navbar ul li {
-    list-style-type: none;
-    display: inherit;
-    flex-direction: row;
-    padding: 5px 0;
-}
-
-.nav_list_item a {
-    color: #FBE9D0;
-    font-size: 35px;
-    text-decoration: none;
-    padding: 10px;
-}
-
-.nav_list_item:hover {
-    background-color: #90AEAD;
-    padding: 5px;
-}
-
-.navigation .navbar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100px; /* Fix nav bar height */
-    width:100%;
-}
-
-.navigation .navbar ul {
-    display: flex;
-    justify-content: space-evenly;
-    width:100%;
-    /* font-style: ; */
-}
-
-.navigation {
-    display: flex;
-    background-color: #244855;
-}
-
 /** FOOTER CSS */
 
 .footer {
@@ -93,22 +47,6 @@ body {
     font-family: "Afacad Flux", sans-serif;
     font-weight: 100;
 }
-
-
-
-/*
-    Show/hide the hamburger menu depending on the screen size which is being used
-*/
-@media screen and (max-width: 880px) {
-    .navigation {
-        display: none;
-    }
-
-    .mobile_nav {
-        display:flex;
-    }
-}
-
 
 /* 
     Button Css

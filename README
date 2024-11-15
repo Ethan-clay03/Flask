@@ -1,12 +1,42 @@
-# To run locally
+##########################################
+#           Docker Commands              #
+##########################################
 
+#TO DO
+
+
+
+
+
+##########################################
+#              Run Manually              #
+##########################################
+
+
+#The below are optional steps to run the application manually, you can alternatively install and run docker which will create the environment
+
+
+##########################################
+#              Flask Commands            #
+##########################################
+# To run Flask you will need to be in the virtual environment, to get started enter the following command while within the flask-backend folder
+
+#Linux
 . .venv/bin/activate
 
+#Windows
+.venv\Scripts\activate
+
+#Then run the following, if you are not on port 5000 you will need to force it with the '--port 5000' arg
 flask run   (Will run on 127.0.0.1:5000)
 
-
-# To apply database changes
+# To apply database changes/run migrations
 flask db upgrade
 
-#Creating new migration file
+#Creating new migration file (for development)
 flask db migrate -m "Add age column to User model"
+
+
+##########################################
+#              React Commands            #
+##########################################

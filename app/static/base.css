@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@100..1000&display=swap');
 
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 /** FOOTER CSS */
 
 .footer {

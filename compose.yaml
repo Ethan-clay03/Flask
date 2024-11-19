@@ -7,13 +7,13 @@ services:
     ports:
       - '5000:5000'
     volumes:
-      - ./app:/app 
-    environment:
-      - FLASK_APP=app:create_app 
-      - DATABASE_HOST=database
-      - DATABASE_USER=user
-      - DATABASE_PASSWORD=userpassword
-      - DATABASE_NAME=mydatabase
+      - ./app:/flask/app 
+    # environment:
+    #   - FLASK_APP=app:create_app 
+    #   - DATABASE_HOST=database
+    #   - DATABASE_USER=user
+    #   - DATABASE_PASSWORD=userpassword
+    #   - DATABASE_NAME=mydatabase
     depends_on:
       - database
 

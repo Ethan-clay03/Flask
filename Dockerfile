@@ -5,5 +5,6 @@ WORKDIR ./flask
 
 RUN pip3 install --no-cache-dir -r requirements.txt
 
+ENV USE_RELOADER=true
 ENV FLASK_APP=app:create_app
 CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]

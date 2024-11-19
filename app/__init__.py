@@ -4,6 +4,8 @@ from flask import Flask
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from dotenv import load_dotenv
+import os
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -12,15 +14,19 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
     
-    #ONLY TURN ON FOR DEBUGGING
-    app.config['DEBUG'] = True
+    #Only enabled when DEVELOPMENT_MODE in .env is set to true
+    development_mode = os.getenv("DEVELOPMENT_MODE")
 
-    # Database connection , TO DO: Encrypt and move into .env fix where connection only works when remoted into database
-    db_user = 'ethan2clay'
-    db_password = 'Ethan2claY10+$++'
-    db_name = 'ethan2clay_prj'
+    if (development_mode.lower() == 'true'): 
+        app.config['DEBUG'] = True
+
+    load_dotenv()
+    db_host = os.getenv("DATABASE_HOST")
+    db_user = os.getenv("DATABASE_USER")
+    db_password = os.getenv("DATABASE_PASSWORD")
+    db_name = os.getenv("DATABASE_NAME")
     
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{db_user}:{db_password}@localhost/{db_name}".format(db_user=db_user, db_password=db_password, db_name=db_name)
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}".format(db_user=db_user, db_password=db_password, db_name=db_name)
     db.init_app(app)
     
     #Run Flask migrations if any available

@@ -2,10 +2,13 @@
 #           Docker Commands              #
 ##########################################
 
-#TO DO
+# Before running any commands you will need to copy the .env-example file and rename the copy to .env . Once done change the 
+# environment variables to whatever you would like. You can use these details to connect to your own database at localhost:{PORT}
 
-
-
+# Install Docker desktop https://www.docker.com/products/docker-desktop/
+# Once done the above steps. Navigate to the app directory within your terminal.
+# Then run `docker compose build` if it is your first time building the container.
+# If you have already built the containers previously simply run `docker compose up -d` (The -d means you can continue to use the terminal after the command has executed)
 
 
 ##########################################
@@ -13,7 +16,7 @@
 ##########################################
 
 
-#The below are optional steps to run the application manually, you can alternatively install and run docker which will create the environment
+# The below are optional steps to run the application manually, you can alternatively install and run docker which will create the environment
 
 
 ##########################################
@@ -21,22 +24,23 @@
 ##########################################
 # To run Flask you will need to be in the virtual environment, to get started enter the following command while within the flask-backend folder
 
-#Linux
+# Linux
 . .venv/bin/activate
 
-#Windows
+# Windows
 .venv\Scripts\activate
 
-#Then run the following, if you are not on port 5000 you will need to force it with the '--port 5000' arg
+# Then run the following, if you are not on port 5000 you will need to force it with the '--port 5000' arg
 flask run   (Will run on 127.0.0.1:5000)
 
 # To apply database changes/run migrations
 flask db upgrade
 
-#Creating new migration file (for development)
+# Creating new migration file (for development)
 flask db migrate -m "Add age column to User model"
 
-
 ##########################################
-#              React Commands            #
+#              Database Commands         #
 ##########################################
+# Login to CSCT cloud and connect to ethan2clay_prj, alternatively copy .env-example and change the copy to .env and add your own database connection. 
+# It is advised to use the dockerised containers as this will mount a volume and retain your database entries.

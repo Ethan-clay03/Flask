@@ -24,6 +24,18 @@
 ##########################################
 # To run Flask you will need to be in the virtual environment, to get started enter the following command while within the flask-backend folder
 
+# For the first time running manually you will also need to run the below additional commands
+
+# Linux 
+python3 -m venv .venv
+
+# Windows
+py -3 -m venv .venv
+
+# Both Windows and Mac
+Once done you will need to run pip install on each line of requirements.txt . Once done restart your command line and carry on from the below commands
+to be fully setup.
+
 # Linux
 . .venv/bin/activate
 

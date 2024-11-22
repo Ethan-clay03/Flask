@@ -3,3 +3,5 @@ flask_sqlalchemy
 flask_migrate
 pymysql
 python-dotenv
+jinja2==3.0.0
+jinja2 markupsafe

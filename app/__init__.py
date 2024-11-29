@@ -26,7 +26,8 @@ def create_app(config_class=Config):
     db_password = os.getenv("DATABASE_PASSWORD")
     db_name = os.getenv("DATABASE_NAME")
     
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}".format(db_user=db_user, db_password=db_password, db_name=db_name)
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}".format(db_user=db_user, db_password=db_password, db_host=db_host, db_name=db_name)
+    print(app.config['SQLALCHEMY_DATABASE_URI'])
     db.init_app(app)
     
     #Run Flask migrations if any available

@@ -7,15 +7,16 @@ services:
     ports:
       - '5000:5000'
     volumes:
-      - ./app:/flask/app 
-    # environment:
-    #   - FLASK_APP=app:create_app 
-    #   - DATABASE_HOST=database
-    #   - DATABASE_USER=user
-    #   - DATABASE_PASSWORD=userpassword
-    #   - DATABASE_NAME=mydatabase
+      - ./app:/flask/app
     depends_on:
       - database
+    networks:
+      - network
+    environment:
+      DB_HOST: database
+      DB_USER: user
+      DB_PASSWORD: userpassword
+      DB_NAME: mydatabase
 
   database:
     image: mysql:8.3
@@ -28,6 +29,12 @@ services:
       MYSQL_PASSWORD: userpassword
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - network
 
 volumes:
   mysql_data:
+
+networks:
+  network:
+    driver: bridge

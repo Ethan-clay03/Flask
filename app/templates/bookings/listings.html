@@ -1,32 +1,40 @@
 {% extends 'base.html' %}
-
+# Implements CSS Slider from https://swiffyslider.com/docs/
 {% block content %}
+    <head>
+        <!-- <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='listings.css')}}"> -->
+        <script src="https://cdn.jsdelivr.net/npm/swiffy-slider@1.6.0/dist/js/swiffy-slider.min.js" crossorigin="anonymous" defer></script>
+        <link href="https://cdn.jsdelivr.net/npm/swiffy-slider@1.6.0/dist/css/swiffy-slider.min.css" rel="stylesheet" crossorigin="anonymous">
+    </head>
     <div class="content">
-        <div class="content">
-            <p>{{all_listings}}</p>
-            <h1>All Listings</h1>
-            <table border="1">
-                <thead>
-                    <tr>
-                        {% for column in column_names %}
-                            <th>{{ column.replace('_', ' ').title() }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for listing in all_listings %}
-                        <tr>
-                            {% for column in column_names %}
-                                <td>{{ getattr(listing, column) }}</td>
-                            {% endfor %}
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="{{ column_names | length }}">No listings available.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="swiffy-slider slider-item-show2 slider-item-reveal slider-nav-outside slider-nav-round slider-nav-visible slider-indicators-outside slider-indicators-round slider-indicators-dark slider-nav-animation slider-nav-animation-fadein slider-item-first-visible">
+            <ul class="slider-container py-4">
+                {% for listing in top_listings %}
+                <li class="slide-visible">
+                    <div class="card shadow h-100">
+                        <div class="ratio ratio-16x9">
+                            <img src="../uploads/listing_images/{{listing.}}.jpg" class="card-img-top" loading="lazy" alt="...">
+                        </div>
+                        <div class="card-body p-3 p-xl-4">
+                            <h3 class="card-title h5">{{listing.destination_location}}</h3>
+                            <p class="card-text">Add Location description here once implemented</p>
+                            <div><a href="#" class="btn btn-primary">Book now</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        
+            <button type="button" class="slider-nav" aria-label="Go left"></button>
+            <button type="button" class="slider-nav slider-nav-next" aria-label="Go left"></button>
+        
+            <div class="slider-indicators">
+                <button class="active" aria-label="Go to slide"></button>
+                <button aria-label="Go to slide" class=""></button>
+                <button aria-label="Go to slide" class=""></button>
+                <button aria-label="Go to slide" class=""></button>
+            </div>
         </div>
     </div>
 {% endblock %}

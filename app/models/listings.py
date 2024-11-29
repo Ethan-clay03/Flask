@@ -29,9 +29,17 @@ class Listings(db.Model):
                          business_tickets=business_tickets,
                          economy_tickets=economy_tickets)
 
-        # Add the new flight to the session and commit
+        # Add the new flight to the database and commit
         db.session.add(new_flight)
         db.session.commit()
         return new_flight
-        #return cls.query.all()    
+        #return cls.query.all()   
+    
+    @classmethod    
+    def get_top_listings(cls, amount_of_listings = 5):
+         return cls.query.order_by(
+            cls.economy_tickets,
+            cls.business_tickets
+        ).limit(amount_of_listings).all()
+         
     

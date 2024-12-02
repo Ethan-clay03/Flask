@@ -9,8 +9,8 @@ class ListingImages(db.Model):
     image_location = db.Column(db.String(255), nullable=False)
     image_description = db.Column(db.String(255), nullable=True)
     main_image = db.Column(db.SmallInteger(), nullable=False)
-    listings_id = mapped_column(ForeignKey("listings.id"))
-    listings = relationship("Listings", back_populates="listing_images")
+    # listings_id = mapped_column(ForeignKey("listings.id"))
+    # listings = relationship("Listings", back_populates="listing_images")
 
     @classmethod
     def get_selected_main_images(cls, listing_ids):

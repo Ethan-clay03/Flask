@@ -13,7 +13,7 @@ class Listings(db.Model):
     transport_type = db.Column(db.String(255), nullable=False)
     business_tickets = db.Column(db.Integer(), nullable=False)
     economy_tickets = db.Column(db.Integer(), nullable=False)
-    listing_images = relationship("ListingImages", back_populates="listing_images")
+    # listing_images = relationship("ListingImages", back_populates="listing_images")
 
     @classmethod
     def get_all_listings(cls):

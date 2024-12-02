@@ -1,7 +1,11 @@
-.custom-dark-blue-text a {
-  color: #244855 !important;
+.nav_background {
+  background-color: #244855;
 }
 
-.custom-light-blue-background {
-  background-color: #90AEAD !important;
+.navbar-dark {
+  color: #FBE9D0;
+}
+
+.dropdown-menu {
+  background-color: #90AEAD;
 }

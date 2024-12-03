@@ -26,6 +26,8 @@ def create_app(config_class=Config):
     db_password = os.getenv("DATABASE_PASSWORD")
     db_name = os.getenv("DATABASE_NAME")
     
+    app.config['SECRET_KEY'] = 'tnm]H+akmfnf_#PT>i|(Qo4LT@+n£9"~e3'
+    
     app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}".format(db_user=db_user, db_password=db_password, db_host=db_host, db_name=db_name)
     print(app.config['SQLALCHEMY_DATABASE_URI'])
     db.init_app(app)
@@ -42,6 +44,12 @@ def create_app(config_class=Config):
     
     from app.api import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api')
+    
+    from app.admin import bp as admin_bp
+    app.register_blueprint(admin_bp, url_prefix='/admin')
+    
+    from app.profile import bp as profile_bp
+    app.register_blueprint(profile_bp, url_prefix='/profile')
     
     if __name__ == "__main__":
         app.run(use_reloader=True)

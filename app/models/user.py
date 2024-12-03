@@ -22,3 +22,11 @@ class User(db.Model):
     @classmethod
     def search_user_id(cls, user_id):
         return cls.query.get(user_id)
+    
+
+    @classmethod
+    def search_user_by_email(cls, user_email):
+        
+        user_exist = cls.query.filter_by(email=user_email).first()
+        
+        return user_exist

@@ -13,7 +13,7 @@ def index():
 
 @bp.route('/login')
 def login():
-    return 'Login'
+    return render_template('profile/login.html')
 
 @bp.route('/signup', methods=['POST'])
 def signup_post():

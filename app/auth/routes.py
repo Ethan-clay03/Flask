@@ -1,5 +1,5 @@
 #https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login#step-1-installing-packages
-from flask import Blueprint, render_template, redirect, url_for, request
+from flask import Blueprint, render_template, redirect, url_for, request, flash
 from app.auth import bp
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import User
@@ -21,7 +21,7 @@ def signup_post():
     if user:
         return redirect(url_for('profile.signup'))
 
-    new_user = User(username=username, email=email, password=generate_password_hash(password, method='pbkdf2:sha256'), role_id=2)  # Assuming role_id is required and you have a default value or retrieve it from elsewhere
+    new_user = User.create_user(username=username, email=email, password=password)
 
     db.session.add(new_user)
     db.session.commit()
@@ -41,4 +41,4 @@ def login_post():
         return redirect(url_for('profile.login'))
 
     login_user(user, remember=remember)
-    return redirect(url_for('main.profile'))
+    return redirect(url_for('profile.index'))

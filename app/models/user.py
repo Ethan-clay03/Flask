@@ -1,5 +1,6 @@
 from flask import request, jsonify
 from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 
 class User(UserMixin, db.Model):
@@ -14,8 +15,9 @@ class User(UserMixin, db.Model):
     token_expiry = db.Column(db.DateTime(), nullable=True)
 
     @classmethod
-    def create_user(cls, username, email, password, role_id):
-        new_user = cls(username=username, email=email, password=password, role_id=role_id)
+    def create_user(cls, username, email, password, role_id = 1): # Role ID 1 is default for standard users
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256') 
+        new_user = cls(username=username, email=email, password=hashed_password, role_id=role_id)
         db.session.add(new_user)
         db.session.commit()
         

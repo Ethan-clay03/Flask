@@ -26,7 +26,7 @@ def get_user_by_id(id):
 def create_user():
     try:
         #Hardcoded for now as when running upgrade on new db no users exist yet, will change at some point
-        result = User.create_user('ethan_root', 'ethan2.clay@live.uwe.ac.uk', 'password1234', 1)
+        result = User.create_user('ethan_root', 'ethan2.clay@live.uwe.ac.uk', 'password1234', 2) # Role ID 2 is for admins
 
         if result is None:
             return jsonify({'error': 'User not found'}), 404

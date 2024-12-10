@@ -1,7 +1,8 @@
 from flask import request, jsonify
+from flask_login import UserMixin
 from app import db
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -17,16 +18,15 @@ class User(db.Model):
         new_user = cls(username=username, email=email, password=password, role_id=role_id)
         db.session.add(new_user)
         db.session.commit()
+        
         return new_user
 
     @classmethod
     def search_user_id(cls, user_id):
         return cls.query.get(user_id)
     
-
     @classmethod
     def search_user_by_email(cls, user_email):
-        
         user_exist = cls.query.filter_by(email=user_email).first()
         
         return user_exist

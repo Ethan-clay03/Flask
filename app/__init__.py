@@ -4,11 +4,13 @@ from flask import Flask
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_login import LoginManager
 from dotenv import load_dotenv
 import os
 
 db = SQLAlchemy()
 migrate = Migrate()
+login_manager = LoginManager()
 
 def create_app(config_class=Config):    
     app = Flask(__name__)
@@ -36,22 +38,31 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
 
     # Register blueprints and url prefixes
-    from app.main import bp as main_bp
-    app.register_blueprint(main_bp)
+    register_blueprints(app)
     
-    from app.bookings import bp as bookings_bp
-    app.register_blueprint(bookings_bp, url_prefix='/bookings')
-    
-    from app.api import bp as api_bp
-    app.register_blueprint(api_bp, url_prefix='/api')
-    
-    from app.admin import bp as admin_bp
-    app.register_blueprint(admin_bp, url_prefix='/admin')
-    
-    from app.profile import bp as profile_bp
-    app.register_blueprint(profile_bp, url_prefix='/profile')
     
     if __name__ == "__main__":
         app.run(use_reloader=True)
+        
+    login_manager.login_view = 'profile.login'
+    login_manager.init_app(app)
 
     return app
+
+@login_manager.user_loader
+def load_user(user_id):
+    from .models import User
+    return User.query.get(int(user_id))
+
+def register_blueprints(app):
+    blueprints = [
+        ('auth', None),
+        ('main', None),
+        ('bookings', '/bookings'),
+        ('api', '/api'),
+        ('admin', '/admin'),
+        ('profile', '/profile')
+    ]
+    for module_name, url_prefix in blueprints:
+        module = __import__(f'app.{module_name}', fromlist=['bp'])
+        app.register_blueprint(module.bp, url_prefix=url_prefix)

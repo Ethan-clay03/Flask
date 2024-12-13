@@ -35,10 +35,15 @@
                                     Account
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                    <li><a class="dropdown-item" href="#">Account Details</a></li>
-                                    <li><a class="dropdown-item" href="#">My Bookings</a></li>
-                                    <li><a class="dropdown-item" href="#">Log Out</a></li>
+                                    {% if user_in_session %}
+                                        <li><a class="dropdown-item" href="#">Account Details</a></li>
+                                        <li><a class="dropdown-item" href="#">My Bookings</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('profile.logout') }}">Log Out</a></li>
+                                    {% else %}
+                                        <li><a class="dropdown-item" href="{{ url_for('profile.login') }}">Log In</a></li>
+                                    {% endif %}
                                 </ul>
+                                
                                 </li>
                             </ul>
                             </div>

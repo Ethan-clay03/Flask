@@ -4,7 +4,7 @@ from flask import Flask
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 from dotenv import load_dotenv
 import os
 
@@ -40,6 +40,21 @@ def create_app(config_class=Config):
     # Register blueprints and url prefixes
     register_blueprints(app)
     
+    # Add any vars needed accessible through all templates
+    @app.context_processor
+    def set_global_html_variable_values():
+        try:
+            if current_user.is_authenticated:
+                user_in_session = True
+            else:
+                user_in_session = False
+
+            template_config = {'user_in_session': user_in_session}
+            return template_config
+        except Exception as e:
+            # print(f"Error in context processor: {e}")
+            return {'user_in_session': False}  # Fallback, to create logging to record such failures (database corrupted etc.)
+
     
     if __name__ == "__main__":
         app.run(use_reloader=True)
@@ -56,7 +71,6 @@ def load_user(user_id):
 
 def register_blueprints(app):
     blueprints = [
-        ('auth', None),
         ('main', None),
         ('bookings', '/bookings'),
         ('api', '/api'),
@@ -66,3 +80,4 @@ def register_blueprints(app):
     for module_name, url_prefix in blueprints:
         module = __import__(f'app.{module_name}', fromlist=['bp'])
         app.register_blueprint(module.bp, url_prefix=url_prefix)
+

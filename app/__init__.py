@@ -18,9 +18,10 @@ def create_app(config_class=Config):
     
     #Only enabled when DEVELOPMENT_MODE in .env is set to true
     development_mode = os.getenv("DEVELOPMENT_MODE")
+    print(development_mode)
 
-    if (development_mode.lower() == 'true'): 
-        app.config['DEBUG'] = True
+    #if (development_mode.lower() == 'true'): 
+    app.config['DEBUG'] = True
 
     load_dotenv()
     db_host = os.getenv("DATABASE_HOST")
@@ -57,7 +58,7 @@ def create_app(config_class=Config):
 
     
     if __name__ == "__main__":
-        app.run(use_reloader=True)
+        app.run(use_reloader=True, debug=True)
         
     login_manager.login_view = 'profile.login'
     login_manager.init_app(app)
@@ -80,4 +81,7 @@ def register_blueprints(app):
     for module_name, url_prefix in blueprints:
         module = __import__(f'app.{module_name}', fromlist=['bp'])
         app.register_blueprint(module.bp, url_prefix=url_prefix)
+
+
+
 

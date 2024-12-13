@@ -5,7 +5,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import User
 from app import db
 from flask_login import login_user, logout_user, login_required, current_user
-from app.logger import app_logger
 
 @bp.route('/signup')
 def signup():
@@ -57,8 +56,15 @@ def login():
 @login_required
 @bp.route('/home')
 def index():
-    app_logger.error("Logger accessed on profile page")
     if current_user.is_authenticated:
         return render_template('profile/index.html', username=current_user.username)
+    
+    return redirect(url_for('profile.login'))
+
+@login_required
+@bp.route('/manage_bookings')
+def manage_bookings():
+    if current_user.is_authenticated:
+        return render_template('profile/manage_bookings.html', username=current_user.username)
     
     return redirect(url_for('profile.login'))

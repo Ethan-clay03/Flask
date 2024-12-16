@@ -1,0 +1,43 @@
+version: '3.4'
+
+services:
+  flask:
+    image: flask
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 -m flask run --no-debugger --no-reload --host 0.0.0.0 --port 5000"]
+    ports:
+      - 5000:5000
+      - 5678:5678
+    depends_on:
+      - database
+    networks:
+      - network
+    environment:
+      DEVELOPMENT_MODE: ${DEVELOPMENT_MODE}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_NAME: ${DATABASE_NAME}
+      FLASK_APP: app\__init__.py
+  database:
+    image: mysql:8.0
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      MYSQL_USER: ${DATABASE_USER}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - network
+
+volumes:
+  mysql_data:
+
+networks:
+  network:
+    driver: bridge

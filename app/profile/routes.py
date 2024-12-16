@@ -1,38 +1,51 @@
 #https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login#step-1-installing-packages
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from app.profile import bp
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
 from app.models import User
 from app import db
 from flask_login import login_user, logout_user, login_required, current_user
+from app.logger import auth_logger
 
 @bp.route('/signup')
 def signup():
-    return render_template(url_for('profile.signup'))
+    return render_template('profile/signup.html')
 
 @bp.route('/signup', methods=['POST'])
 def signup_post():
-    email = request.form.get('email')
-    username = request.form.get('name')
-    password = request.form.get('password')
+    form_data = {
+        'email': request.form.get('email'),
+        'username': request.form.get('username'),
+        'password': request.form.get('password')
+    }
 
-    user = User.query.filter_by(email=email).first()
+    user = User.query.filter_by(email=form_data['email']).first()
 
     if user:
         return redirect(url_for('profile.signup'))
 
-    new_user = User.create_user(username=username, email=email, password=password)
+    try:
+        if not form_data['username'] or not form_data['email'] or not form_data['password']:
+            raise ValueError("Missing required fields: Email, Username, Password")
+        new_user = User.create_user(username=form_data['username'], email=form_data['email'], password=form_data['password'])
+    except ValueError as e:
+        auth_logger.error("Unable to create user, full error was: " + str(e))
+        flash('Missing required fields')
+        return redirect(url_for('profile.signup'))
 
     db.session.add(new_user)
     db.session.commit()
 
-    return redirect(url_for('profile.login'))
+    # Log the user in automatically 
+    login_user(new_user) 
+
+    return redirect(url_for('profile.index'))
 
 @bp.route('/login', methods=['POST'])
 def login_post():
     email = request.form.get('email')
     password = request.form.get('password')
-    remember = True if request.form.get('remember') else False # If checkbox for user is ticked
+    remember = True if request.form.get('remember') else False # Change to boolean value depending if tickbox is selected
 
     user = User.query.filter_by(email=email).first()
 

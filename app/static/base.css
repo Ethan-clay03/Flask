@@ -82,8 +82,38 @@ body {
     background-color: #90AEAD;
 }
 
+/**
+Form styling options
+*/
+
+.form_box_30 {
+    position: relative;
+    width: 100%; 
+    max-width: 400px; /* Maximum width for larger screens */
+    margin: auto;
+    vertical-align: middle;
+    padding: 15px; /* Add some padding */
+}
+
+@media (max-width: 600px) {
+    .form_box_30 {
+        width: 90%; /* Adjust width for smaller screens */
+    }
+}
 
 
+.background_1 {
+    border-radius: 25px;
+    background: #90AEAD;
+    padding: 50px;
+    color: #FBE9D0; 
+    background-image: linear-gradient(to bottom right, #4169e1, #89CFF0);
+}
+
+.form-check-input:checked {
+    color: #FBE9D0; 
+    background: #FBE9D0;
+}
 
 /* HEX codes for colours used through out website don't delete */
 

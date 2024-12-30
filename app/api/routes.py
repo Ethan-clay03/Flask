@@ -2,6 +2,7 @@ from flask import render_template, redirect, url_for, Flask, jsonify
 from app.api import bp
 from app.models import User, Listings
 from sqlalchemy import text
+from app import csrf
 
 @bp.route('/user_id/<int:id>', methods=['GET'])
 def get_user_by_id(id):

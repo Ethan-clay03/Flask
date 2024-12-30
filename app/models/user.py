@@ -32,3 +32,9 @@ class User(UserMixin, db.Model):
         user_exist = cls.query.filter_by(email=user_email).first()
         
         return user_exist
+    
+    @classmethod
+    def search_user_by_username(cls, user_name):
+        user_exist = cls.query.filter_by(username=user_name).first()
+        
+        return user_exist

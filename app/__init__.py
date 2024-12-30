@@ -6,11 +6,13 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager, current_user
 from dotenv import load_dotenv
+from flask_wtf.csrf import CSRFProtect
 import os
 
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
+csrf = CSRFProtect()
 
 def create_app(config_class=Config):    
     app = Flask(__name__)
@@ -40,6 +42,9 @@ def create_app(config_class=Config):
 
     # Register blueprints and url prefixes
     register_blueprints(app)
+
+    #Protect internal endpoints from external use
+    csrf.init_app(app)
     
     # Add any vars needed accessible through all templates
     @app.context_processor

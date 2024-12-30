@@ -7,3 +7,4 @@ jinja2
 cryptography
 flask-login
 debugpy
+flask-wtf

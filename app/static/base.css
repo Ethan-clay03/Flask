@@ -89,30 +89,38 @@ Form styling options
 .form_box_30 {
     position: relative;
     width: 100%; 
-    max-width: 400px; /* Maximum width for larger screens */
+    max-width: 400px;
     margin: auto;
     vertical-align: middle;
-    padding: 15px; /* Add some padding */
+    padding: 15px;
 }
 
 @media (max-width: 600px) {
     .form_box_30 {
-        width: 90%; /* Adjust width for smaller screens */
+        width: 90%;
     }
 }
 
-
-.background_1 {
+.profile_form_background {
     border-radius: 25px;
-    background: #90AEAD;
+    background: #244855;
     padding: 50px;
     color: #FBE9D0; 
-    background-image: linear-gradient(to bottom right, #4169e1, #89CFF0);
 }
 
 .form-check-input:checked {
     color: #FBE9D0; 
     background: #FBE9D0;
+}
+
+.form_header {
+    text-align: center;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.username-feedback .email-feedback {
+    text-align: center;
 }
 
 /* HEX codes for colours used through out website don't delete */

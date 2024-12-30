@@ -1,27 +1,82 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="form_box_30 background_1">
-        <h3 style="margin-top:30px">Sign Up</h3>
-        <form method="POST" action="{{ url_for('profile.signup_post') }}">
+<div class="form_box_30 background_1">
+    <div class="profile_form_background">
+        <h3 class="form_header">Sign Up</h3>
+        <form method="POST" action="{{ url_for('profile.signup') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mb-3">
-                <label class="form-label" autofocus="">Username</label>
-                <input type="username" class="form-control" name="username">
+                <label class="form-label" for="username" autofocus="">Username</label>
+                <input type="text" id="username" class="form-control" name="username" required>
+                <small id="username-feedback" class="form-text"></small>
             </div>
             <div class="mb-3">
-                <label class="form-label">Email address</label>
-                <input type="email" class="form-control" name="email">
+                <label class="form-label" for="email">Email address</label>
+                <input type="email" id="email" class="form-control" name="email" required>
+                <small id="email-feedback" class="form-text"></small>
             </div>
             <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" class="form-control" name="password">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" id="password" class="form-control" name="password" required>
             </div>
             <div class="mb-3 form-check">
                 <input type="checkbox" class="form-check-input" id="remember" name="remember">
                 <label class="form-check-label" for="remember">Remember me</label>
             </div>
-            <button type="submit" class="btn btn-primary">Log In</button>
-            </form>
+            <button type="submit" class="btn btn-primary">Sign Up</button>
+        </form>
     </div>
+</div>
 
+<script>
+    function makeAjaxRequest(url, data, field) {
+        const feedbackElement = document.getElementById(`${field}-feedback`);
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        feedbackElement.textContent = '';
+        feedbackElement.style.color = '';
+
+        if (data[field].length > 0) {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.available) {
+                        feedbackElement.textContent = `${field.charAt(0).toUpperCase() + field.slice(1)} is available.`;
+                        feedbackElement.style.color = 'green';
+                    } else {
+                        feedbackElement.textContent = `${field.charAt(0).toUpperCase() + field.slice(1)} is already taken.`;
+                        feedbackElement.style.color = 'red';
+                    }
+                })
+                .catch(error => {
+                    feedbackElement.textContent = `Error checking ${field}.`;
+                    feedbackElement.style.color = 'red';
+                });
+        }
+    }
+
+    function checkUsernameAvailability(username) {
+        makeAjaxRequest("{{ url_for('profile.check_username') }}", { 'username': username }, 'username');
+    }
+
+    function checkEmailAvailability(email) {
+        makeAjaxRequest("{{ url_for('profile.check_email') }}", { 'email': email }, 'email');
+    }
+
+    document.getElementById('username').addEventListener('blur', function () {
+        checkUsernameAvailability(this.value);
+    });
+
+    document.getElementById('email').addEventListener('blur', function () {
+        checkEmailAvailability(this.value);
+    });
+</script>
 {% endblock %}

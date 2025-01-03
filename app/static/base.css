@@ -123,6 +123,11 @@ Form styling options
     text-align: center;
 }
 
+.clear-hyperlink {
+    color: inherit;
+    text-decoration: none;
+}
+
 /* HEX codes for colours used through out website don't delete */
 
 /* Colour pallete taken from https://visme.co/blog/website-color-schemes/

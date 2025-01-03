@@ -51,7 +51,7 @@ def login_post():
 
     if not user or not check_password_hash(user.password, password):
         flash('Please check your login details and try again.')
-        return redirect(url_for('profile.login'))
+        return redirect(url_for('profile.login', error=True))
 
     login_user(user, remember=remember)
     return redirect(url_for('profile.index'))
@@ -94,7 +94,41 @@ def logout():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('profile.index'))
-    return render_template('profile/login.html')
+    #Check if login is being sent due to error
+    error = request.args.get('error')
+    return render_template('profile/login.html', error=error)
+
+@bp.route('/password-reset')
+def password_reset():
+    return render_template('profile/password-reset.html')
+
+@bp.route('/password-reset', methods=['POST'])
+def check_password_reset_1():
+    username = request.form.get('username')
+    email = request.form.get('email')
+    
+    #Search to see if username already exists
+    user_exist = User.search_user_by_username(username)
+    if user_exist is None:
+        return flash('Username does not exist')
+    
+    email_exist = User.search_user_by_email(email)
+    if email_exist is None:
+        return flash('Email does not exist')
+
+    return redirect(url_for('profile.password_reset_2'))
+
+@bp.route('/password-reset/2FA')
+def password_reset_2():
+    return render_template('profile/password-reset-2.html')
+
+@bp.route('/password-reset/2FA', methods=['POST'])
+def check_password_reset_2():
+    code =  request.form.get('2fa-code')
+    
+    #Simulate 2FA code being entered
+    if code == '123456':
+        pass
 
 @login_required
 @bp.route('/home')

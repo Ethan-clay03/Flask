@@ -38,3 +38,10 @@ class User(UserMixin, db.Model):
         user_exist = cls.query.filter_by(username=user_name).first()
         
         return user_exist
+    
+    @classmethod
+    def change_user_password(cls, email, password):
+        user = cls.search_user_by_email(email)
+
+        if user is None:
+            raise ValueError("Error")

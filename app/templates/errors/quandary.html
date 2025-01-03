@@ -1,0 +1,28 @@
+{% block content %}
+<head>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='base.css')}}">
+    <script src="https://kit.fontawesome.com/11fd621de6.js" crossorigin="anonymous"></script>
+</head>
+<div class="quandary-div">
+    <h1>500 Server Error</h1>
+    <div class="container">
+      <div style="margin-bottom: 20px;"><span>Something went wrong, if this continues please contact support</span></div>
+      <div class="button_2"><i class="fa-solid fa-circle-arrow-left"></i><span> Go back</span></div>
+    </div>
+</div>
+
+<style>
+
+.quandary-div {
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: baseline;
+  align-content: center;
+  font-size: xx-large;
+  flex-wrap: wrap;
+}
+
+</style>
+{% endblock %}

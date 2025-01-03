@@ -1,6 +1,6 @@
 # Boilerplate create_app code taken from https://www.digitalocean.com/community/tutorials/how-to-structure-a-large-flask-application-with-flask-blueprints-and-flask-sqlalchemy
 
-from flask import Flask
+from flask import Flask, url_for, redirect, session
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -60,7 +60,13 @@ def create_app(config_class=Config):
         except Exception as e:
             # print(f"Error in context processor: {e}")
             return {'user_in_session': False}  # Fallback, to create logging to record such failures (database corrupted etc.)
-
+    
+    
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        app.logger.error(f"Unhandled exception: {e}")
+        session['error_message'] = str(e)
+        return redirect(url_for('errors.quandary'))
     
     if __name__ == "__main__":
         app.run(use_reloader=True, debug=True)
@@ -81,7 +87,8 @@ def register_blueprints(app):
         ('bookings', '/bookings'),
         ('api', '/api'),
         ('admin', '/admin'),
-        ('profile', '/profile')
+        ('profile', '/profile'),
+        ('errors', '/errors'),
     ]
     for module_name, url_prefix in blueprints:
         module = __import__(f'app.{module_name}', fromlist=['bp'])

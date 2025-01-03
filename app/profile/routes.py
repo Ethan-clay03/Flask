@@ -1,5 +1,5 @@
 #https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login#step-1-installing-packages
-from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
+from flask import render_template, redirect, url_for, request, flash, jsonify, session
 from app.profile import bp
 from werkzeug.security import check_password_hash
 from app.models import User
@@ -116,6 +116,7 @@ def check_password_reset_1():
     if email_exist is None:
         return flash('Email does not exist')
 
+    session['password-reset-email'] = email
     return redirect(url_for('profile.password_reset_2'))
 
 @bp.route('/password-reset/2FA')
@@ -127,8 +128,25 @@ def check_password_reset_2():
     code =  request.form.get('2fa-code')
     
     #Simulate 2FA code being entered
-    if code == '123456':
-        pass
+    if code == '123456' or code == '234567':
+        return redirect(url_for('profile.password_reset_3'))
+    
+    return flash('Invalid 2FA Code')
+
+@bp.route('/password-reset/reset-password')
+def password_reset_3():
+    return render_template('profile/password-reset-3.html')
+
+@bp.route('/password-reset/reset-password', methods=['POST'])
+def password_reset_process():
+    email = session.get('email')
+    password1 = session.get('password-1')
+    password2 = session.get('password-2')
+    
+    #Simulate 2FA code being entered
+    if password1 == password2:
+        User.change_user_password(email, password1)
+        return redirect(url_for('profile.password_reset_3'))
 
 @login_required
 @bp.route('/home')

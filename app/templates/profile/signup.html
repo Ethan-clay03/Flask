@@ -71,12 +71,21 @@
         makeAjaxRequest("{{ url_for('profile.check_email') }}", { 'email': email }, 'email');
     }
 
-    document.getElementById('username').addEventListener('blur', function () {
-        checkUsernameAvailability(this.value);
-    });
+    function delayAvailabilityCheck(func, delay) {
+        let timer;
+        return function(...args) {
+            clearTimeout(timer);
+            timer = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
 
-    document.getElementById('email').addEventListener('blur', function () {
+    document.getElementById('username').addEventListener('input', delayAvailabilityCheck(function () {
+        checkUsernameAvailability(this.value);
+    }, 500));
+
+    document.getElementById('email').addEventListener('input', delayAvailabilityCheck(function () {
         checkEmailAvailability(this.value);
-    });
+    }, 500));
+
 </script>
 {% endblock %}

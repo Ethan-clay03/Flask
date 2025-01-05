@@ -49,10 +49,10 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.available) {
-                        feedbackElement.textContent = `${field.charAt(0).toUpperCase() + field.slice(1)} is available.`;
+                        feedbackElement.textContent = data.success;
                         feedbackElement.style.color = 'green';
                     } else {
-                        feedbackElement.textContent = `${field.charAt(0).toUpperCase() + field.slice(1)} is already taken.`;
+                        feedbackElement.textContent = data.error;
                         feedbackElement.style.color = 'red';
                     }
                 })
@@ -84,7 +84,10 @@
     }, 500));
 
     document.getElementById('email').addEventListener('input', delayAvailabilityCheck(function () {
-        checkEmailAvailability(this.value);
+        const emailValue = this.value;
+        if (emailValue.includes('@') && emailValue.includes('.')) {
+            checkEmailAvailability(this.value);
+        }
     }, 500));
 
 </script>

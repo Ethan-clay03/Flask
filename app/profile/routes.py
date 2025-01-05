@@ -16,18 +16,19 @@ def signup():
             'password': request.form.get('password')
         }
 
-        if not form_data['username'] or not form_data['email'] or not form_data['password']:
-            flash('Missing required fields: Email, Username, Password')
+        # Validate form data
+        error = validate_signup_form(form_data)
+        if error:
+            flash(error)
             return redirect(url_for('profile.signup'))
 
-        user = User.query.filter_by(email=form_data['email']).first()
-
-        if user:
-            flash('Email address already exists')
-            return redirect(url_for('profile.signup'))
-
+        # Create new user and log in automatically
         try:
-            new_user = User.create_user(username=form_data['username'], email=form_data['email'], password=form_data['password'])
+            new_user = User.create_user(
+                username=form_data['username'],
+                email=form_data['email'],
+                password=form_data['password']
+            )
             db.session.add(new_user)
             db.session.commit()
 
@@ -40,14 +41,36 @@ def signup():
 
     return render_template('profile/signup.html')
 
+def validate_signup_form(form_data):
+    if not all(form_data.values()):
+        return 'Missing required fields: Email, Username, Password'
+
+    if not is_valid_username(form_data['username']):
+        return "You are only allowed to use the following special characters in usernames: - _ +"
+
+    if User.search_user_by_email(form_data['email']):
+            return'Email address already exists'
+
+    if User.search_user_by_username(form_data['username']):
+        return 'Username already exists'
+    
+    return None
+
+def is_valid_username(username):
+    allowed_special_chars = "-_+"
+    return all(c.isalnum() or c in allowed_special_chars for c in username)
+
 
 @bp.route('/login', methods=['POST'])
 def login_post():
-    email = request.form.get('email')
+    username_field = request.form.get('username')
     password = request.form.get('password')
     remember = True if request.form.get('remember') else False # Change to boolean value depending if tickbox is selected
 
-    user = User.query.filter_by(email=email).first()
+    if '@' in username_field:
+        user = User.search_user_by_email(username_field)
+    else:
+        user = User.search_user_by_username(username_field)
 
     if not user or not check_password_hash(user.password, password):
         flash('Please check your login details and try again.')
@@ -64,24 +87,30 @@ def check_username():
     if username is None:
         return jsonify({'error': 'Username is required'}), 400
     
+    if not is_valid_username(username):
+        return jsonify({'error': "Username contains invalid special characters. You may only use: - _ +"}), 400
     #Search to see if username already exists
     user_exist = User.search_user_by_username(username)
     if user_exist is not None:
         return jsonify({'error': 'Username already exists'}), 400
 
-    return jsonify({'available': True, 'success': username + 'is available.'})
+    return jsonify({'available': True, 'success': username + ' is available.'})
 
 
 @bp.route('/check-email', methods=['POST'])
 def check_email():
     data = request.get_json()
     email = data.get('email', '').strip()
-    
-    if not email:
-        return jsonify({'error': 'Email is required'}), 400
 
-    is_available = email not in emails
-    return jsonify({'available': is_available})
+    if email is None:
+        return jsonify({'error': 'Email is required'}), 400
+    
+    email_exist = User.search_user_by_email(email)
+
+    if email_exist:
+        return jsonify({'error': 'Email already registered'}), 400
+
+    return jsonify({'available': True, 'success': 'Email is available'})
 
 
 @bp.route('/logout')

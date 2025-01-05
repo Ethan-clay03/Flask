@@ -43,6 +43,7 @@
                                         <li><a class="dropdown-item" href="{{ url_for('profile.manage_bookings')}}">My Bookings</a></li>
                                         <li><a class="dropdown-item" href="{{ url_for('profile.logout') }}">Log Out</a></li>
                                     {% else %}
+                                        <li><a class="dropdown-item" href="{{ url_for('profile.signup') }}">Sign Up</a></li>
                                         <li><a class="dropdown-item" href="{{ url_for('profile.login') }}">Log In</a></li>
                                     {% endif %}
                                 </ul>

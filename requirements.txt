@@ -8,3 +8,5 @@ cryptography
 flask-login
 debugpy
 flask-wtf
+flask-security
+flask-principal

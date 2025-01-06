@@ -2,6 +2,8 @@ from flask import request, jsonify
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
+import os
+# Avoid importing Role and RoleUsers here to prevent circular import
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -10,18 +12,27 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(255), nullable=False, unique=True)
     email = db.Column(db.String(255), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
-    role_id = db.Column(db.SmallInteger(), nullable=False)
-    api_token = db.Column(db.String(255), nullable=True, unique=True)
-    token_expiry = db.Column(db.DateTime(), nullable=True)
+    fs_uniquifier = db.Column(db.String(64), unique=True, nullable=False)  # Add fs_uniquifier field
+
+    # Import Role and RoleUsers only when defining the roles relationship
+    from app.models.role_users import RoleUsers
+    from app.models.role import Role
+    roles = db.relationship('Role', secondary=RoleUsers.roles_users, backref=db.backref('users', lazy='dynamic'))
 
     @classmethod
-    def create_user(cls, username, email, password, role_id = 1): # Role ID 1 is default for standard users
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256') 
-        new_user = cls(username=username, email=email, password=hashed_password, role_id=role_id)
+    def create_user(cls, username, email, password, role_name='user'):
+        from app.models import Role
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+        new_user = cls(username=username, email=email, password=hashed_password, fs_uniquifier=os.urandom(32).hex())
+    
+        role = Role.query.filter_by(name=role_name).first()
+        if role:
+            new_user.roles.append(role)
         db.session.add(new_user)
         db.session.commit()
-        
+
         return new_user
+
 
     @classmethod
     def search_user_id(cls, user_id):

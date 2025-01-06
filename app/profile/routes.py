@@ -1,11 +1,13 @@
 #https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login#step-1-installing-packages
-from flask import render_template, redirect, url_for, request, flash, jsonify, session
-from app.profile import bp
-from werkzeug.security import check_password_hash
-from app.models import User
-from app import db
+from flask import render_template, redirect, url_for, request, flash, jsonify, session, current_app
+from flask_principal import Identity, identity_changed
 from flask_login import login_user, logout_user, login_required, current_user
+from werkzeug.security import check_password_hash
+from app.profile import bp
+from app.models import User
 from app.logger import auth_logger
+from app import db
+
 
 @bp.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -61,6 +63,8 @@ def is_valid_username(username):
     return all(c.isalnum() or c in allowed_special_chars for c in username)
 
 
+from flask_principal import Identity, identity_changed
+
 @bp.route('/login', methods=['POST'])
 def login_post():
     username_field = request.form.get('username')
@@ -77,7 +81,11 @@ def login_post():
         return redirect(url_for('profile.login', error=True))
 
     login_user(user, remember=remember)
+
+    identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
+
     return redirect(url_for('profile.index'))
+
 
 
 @bp.route('/check-username', methods=['POST'])

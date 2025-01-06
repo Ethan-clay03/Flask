@@ -23,7 +23,5 @@ def upgrade():
               sa.Column('username', sa.String(255), nullable=False, unique=True),
               sa.Column('email', sa.String(255), nullable=False, unique=True),
               sa.Column('password', sa.String(255), nullable=False),
-              sa.Column('role_id', sa.SmallInteger(), nullable=False, server_default='1'), #Standard user permission level
-              sa.Column('api_token', sa.String(255), nullable=True, unique=True),
-              sa.Column('token_expiry', sa.DateTime(), nullable=True)
+              sa.Column('role_id', sa.SmallInteger(), nullable=False, server_default='3')
        )

@@ -40,7 +40,7 @@
                                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                                     {% if user_in_session %}
                                     {% if g.is_admin %}
-                                        <li><a class="dropdown-item" href="{{ url_for('profile.admin_index') }}">Admin Options</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('admin.index') }}">Admin Options</a></li>
                                     {% endif %}
                                         <li><a class="dropdown-item" href="{{ url_for('profile.index') }}">Account Details</a></li>
                                         <li><a class="dropdown-item" href="{{ url_for('profile.manage_bookings')}}">My Bookings</a></li>

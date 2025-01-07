@@ -71,8 +71,7 @@ def create_app(config_class=Config):
             if user and user.role:
                 identity.provides.add(RoleNeed(user.role.name))
                 if user.role.name == 'super-admin':
-                    identity.provides.add(RoleNeed('admin'))  # Super admin should also inherit admin permissions
-                auth_logger.debug(f'Roles provided to identity for {current_user}: {identity.provides}')
+                    identity.provides.add(RoleNeed('admin'))
             else:
                 auth_logger.debug(f'No role found for user {identity.user.username}.')
 
@@ -121,7 +120,6 @@ def create_app(config_class=Config):
                 elif role.name == 'admin':
                     g.admin_permission = admin_permission
                     g.is_admin = True
-        auth_logger.debug(f'Permissions for {current_user}: Admin: {g.admin_permission}, User: {g.user_permission}, Super Admin: {g.super_admin_permission}')
 
     login_manager.login_view = 'profile.login'
     

@@ -6,9 +6,7 @@ from werkzeug.security import check_password_hash
 from app.profile import bp
 from app.models import User
 from app.logger import auth_logger
-from app import admin_permission, permission_required, super_admin_permission
 from app import db
-from flask_principal import Principal, Permission, RoleNeed, identity_loaded
 
 @bp.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -86,11 +84,6 @@ def login_post():
     identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
 
     return redirect(url_for('profile.index'))
-
-@bp.route('/admin/index')
-@permission_required(admin_permission)
-def admin_index():
-    return render_template('profile/admin-index.html')
 
 
 @bp.route('/check-username', methods=['POST'])

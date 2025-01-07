@@ -1,13 +1,14 @@
 #https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login#step-1-installing-packages
-from flask import render_template, redirect, url_for, request, flash, jsonify, session, current_app
+from flask import render_template, redirect, url_for, request, flash, jsonify, session, current_app, abort
 from flask_principal import Identity, identity_changed
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 from app.profile import bp
 from app.models import User
 from app.logger import auth_logger
+from app import admin_permission, permission_required, super_admin_permission
 from app import db
-
+from flask_principal import Principal, Permission, RoleNeed, identity_loaded
 
 @bp.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -86,6 +87,10 @@ def login_post():
 
     return redirect(url_for('profile.index'))
 
+@bp.route('/admin/index')
+@permission_required(admin_permission)
+def admin_index():
+    return render_template('profile/admin-index.html')
 
 
 @bp.route('/check-username', methods=['POST'])
@@ -127,6 +132,7 @@ def logout():
     logout_user()
     return redirect(url_for('main.index'))
 
+
 @bp.route('/login')
 def login():
     if current_user.is_authenticated:
@@ -135,9 +141,11 @@ def login():
     error = request.args.get('error')
     return render_template('profile/login.html', error=error)
 
+
 @bp.route('/password-reset')
 def password_reset():
     return render_template('profile/password-reset.html')
+
 
 @bp.route('/password-reset', methods=['POST'])
 def check_password_reset_1():
@@ -156,9 +164,11 @@ def check_password_reset_1():
     session['password-reset-email'] = email
     return redirect(url_for('profile.password_reset_2'))
 
+
 @bp.route('/password-reset/2FA')
 def password_reset_2():
     return render_template('profile/password-reset-2.html')
+
 
 @bp.route('/password-reset/2FA', methods=['POST'])
 def check_password_reset_2():
@@ -170,9 +180,11 @@ def check_password_reset_2():
     
     return flash('Invalid 2FA Code')
 
+
 @bp.route('/password-reset/reset-password')
 def password_reset_3():
     return render_template('profile/password-reset-3.html')
+
 
 @bp.route('/password-reset/reset-password', methods=['POST'])
 def password_reset_process():

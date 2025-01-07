@@ -35,4 +35,4 @@ class LoggerConfig:
 logger_config = LoggerConfig()
 app_logger = logger_config.setup_logger('app', log_file='app.log', level=LOG_LEVELS['debug'])
 db_logger = logger_config.setup_logger('db', log_file='db.log', level=LOG_LEVELS['info'])
-auth_logger = logger_config.setup_logger('auth', log_file='auth.log', level=LOG_LEVELS['warning'])
+auth_logger = logger_config.setup_logger('auth', log_file='auth.log', level=LOG_LEVELS['debug'])

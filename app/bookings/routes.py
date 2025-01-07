@@ -1,10 +1,8 @@
 from flask import render_template, redirect, url_for, g
 from app.bookings import bp
 from app.models import Listings, ListingImages 
-from app import admin_permission, permission_required, user_permission, super_admin_permission
 
 @bp.route('/home')
-@permission_required(user_permission)
 def index():
     listing_ids = []
     top_listings = Listings.get_top_listings(5)

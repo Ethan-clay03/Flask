@@ -6,6 +6,7 @@ from flask_login import LoginManager, current_user
 from flask_principal import Principal, Permission, RoleNeed, identity_loaded
 from flask_wtf.csrf import CSRFProtect
 from dotenv import load_dotenv
+from app.logger import auth_logger
 from functools import wraps
 import os
 
@@ -21,7 +22,7 @@ def permission_required(permission):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not permission.can():
-                current_app.logger.debug(f'Permission denied for {current_user} attempting to access {request.endpoint}.')
+                auth_logger.debug(f'Permission denied for {current_user} attempting to access {request.endpoint}.')
                 abort(403)
             return f(*args, **kwargs)
         return decorated_function
@@ -50,6 +51,7 @@ def create_app(config_class=Config):
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or 'your_secret_key'
     app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}"
 
+    # Initialize extensions with the app
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
@@ -69,11 +71,10 @@ def create_app(config_class=Config):
             if user and user.role:
                 identity.provides.add(RoleNeed(user.role.name))
                 if user.role.name == 'super-admin':
-                    identity.provides.add(RoleNeed('admin'))
-                    identity.provides.add(RoleNeed('super-admin'))
+                    identity.provides.add(RoleNeed('admin'))  # Super admin should also inherit admin permissions
+                auth_logger.debug(f'Roles provided to identity for {current_user}: {identity.provides}')
             else:
-                current_app.logger.debug(f'No role found for user {identity.user.username}.')
-
+                auth_logger.debug(f'No role found for user {identity.user.username}.')
 
 
     # Add global template variables
@@ -102,26 +103,30 @@ def create_app(config_class=Config):
 
     @app.before_request
     def before_request():
-        g.admin_permission = admin_permission
-        g.user_permission = user_permission
-        g.super_admin_permission = super_admin_permission
+        g.admin_permission = None
+        g.user_permission = None
+        g.super_admin_permission = None
+        g.is_admin = False
+        g.is_super_admin = False
 
         if current_user.is_authenticated:
             role = current_user.role
             if role:
+                g.user_permission = user_permission
                 if role.name == 'super-admin':
                     g.super_admin_permission = super_admin_permission
                     g.admin_permission = admin_permission
-                    g.user_permission = user_permission
+                    g.is_super_admin = True
+                    g.is_admin = True
                 elif role.name == 'admin':
                     g.admin_permission = admin_permission
-                    g.user_permission = user_permission
-                elif role.name == 'user':
-                    g.user_permission = user_permission
+                    g.is_admin = True
+        auth_logger.debug(f'Permissions for {current_user}: Admin: {g.admin_permission}, User: {g.user_permission}, Super Admin: {g.super_admin_permission}')
 
     login_manager.login_view = 'profile.login'
     
     return app
+
 
 @login_manager.user_loader
 def load_user(user_id):

@@ -1,3 +1,29 @@
+## IMPORTANT, PLEASE READ THE BELOW BEFORE USING THE PROJECT
+
+## Important Notice
+
+**Please be aware that this repository is intended for viewing purposes only. Any direct copying or reproduction of the code, layout, or any other part of this project is strictly prohibited.**
+
+This repository is solely provided to help aid in how a flask site can be set out and how more complex flask functionality can be used.
+If you are a student, copying or reproducing this work in your own assignments or projects will likely be considered academic dishonesty by
+UWE and I will not accept any fault for your failure to ensure your own work is unique.
+
+## License
+
+This repository is for viewing purposes only. Unauthorized copying, reproduction, or distribution of any part of this project is strictly prohibited. By continuing to view this repository you accept these terms.
+
+## Contact
+
+If you have any questions or would like to discuss this project further, please feel free to reach out.
+
+## Getting setup
+
+If you wish to try out the site locally you are able to do so using Docker, which will run both the site and database. Alternatively
+I have provided commands to simply load the site but you will need to ensure you update the .env file for your database connection.
+I will NOT assist in getting it running locally (I have only tested all instructions on Windows 10 and unsure if Mac or Linux will work as expected).
+
+
+
 ##########################################
 #           Docker Commands              #
 ##########################################

@@ -10,6 +10,11 @@
     <div class="deals_text"><span class="deals_underline">Deals for you</span></div>
     <div class="swiffy-slider slider-item-show2 slider-item-reveal slider-nav-outside slider-nav-round slider-nav-visible slider-indicators-outside slider-indicators-round slider-indicators-dark slider-nav-animation slider-nav-animation-fadein slider-item-first-visible">
         <ul class="slider-container py-4">
+            {% if get_flashed_messages() %}
+            <div class="alert alert-danger" role="alert">
+                get_flashed_messages()
+            </div>
+            {% endif %}
             {% for listing in top_listings %}
             <li class="slide-visible">
                 <div class="card shadow h-100">

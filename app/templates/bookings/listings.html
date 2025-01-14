@@ -1,12 +1,197 @@
 {% extends 'base.html' %}
-# Implements CSS Slider from https://swiffyslider.com/docs/
 {% block content %}
-    <head>
-        <!-- <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='listings.css')}}"> -->
-        <script src="https://cdn.jsdelivr.net/npm/swiffy-slider@1.6.0/dist/js/swiffy-slider.min.js" crossorigin="anonymous" defer></script>
-        <link href="https://cdn.jsdelivr.net/npm/swiffy-slider@1.6.0/dist/css/swiffy-slider.min.css" rel="stylesheet" crossorigin="anonymous">
-    </head>
-    <div class="content">
-        <p>Create full listings page here with search functionality</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simplified Carousel Example</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .container {
+            width: 60%;
+            margin: 0 auto;
+            font-family: Arial, sans-serif;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .results {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            cursor: pointer;
+        }
+        .main-image {
+            max-width: 150px;
+            cursor: pointer;
+        }
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .carousel-item {
+            height: 400px;
+            position: absolute;
+            width: 100%;
+            transition: transform 0.5s ease-in-out;
+        }
+        .carousel-inner {
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+            display: flex;
+        }
+        .carousel-item.active {
+            position: relative;
+        }
+        .carousel-item-next,
+        .carousel-item-prev,
+        .carousel-item.active {
+            display: block;
+        }
+        .carousel-item-next {
+            transform: translateX(100%);
+        }
+        .carousel-item-prev {
+            transform: translateX(-100%);
+        }
+        .carousel-item-left,
+        .carousel-item-next.carousel-item-left {
+            transform: translateX(0);
+        }
+        .carousel-item-right,
+        .carousel-item-prev.carousel-item-right {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search...">
+            <button onclick="filterResults()">Search</button>
+        </div>
+        
+        <div id="resultsContainer">
+        {% for item in items %}
+        <div class="results" onclick="window.location.href='/bookings/listing/{{ item.id }}'">
+            <div>
+                {% if item.listing_images and item.listing_images[0] %}
+                    <img src="{{ url_for('main.upload_file', filename=item.listing_images[0].image_location) }}" alt="Main Image" class="main-image" onclick="event.stopPropagation(); showModal([{% for image in item.listing_images %}'{{ url_for('main.upload_file', filename=image.image_location) }}'{% if not loop.last %}, {% endif %}{% endfor %}])">
+                {% else %}
+                    <img src="/path/to/default-image.jpg" alt="Default Image" class="main-image">
+                {% endif %}
+            </div>
+            <div>
+                <div class="title">{{ item.depart_location }}</div>
+                <div class="price">{{ item.fair_cost }}</div>
+                <div class="delivery">{{ item.destination_location }}</div>
+                <div>Save up to 10% with multi-buy</div>
+            </div>
     </div>
+{% endfor %}
+
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel">Image Gallery</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                        <ol class="carousel-indicators" id="carouselIndicators"></ol>
+                        <div class="carousel-inner" id="carouselInner"></div>
+                        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#imageModal .close, #imageModal .btn-secondary').on('click', function() {
+                console.log("Close button clicked");
+                $('#imageModal').modal('hide');
+            });
+        });
+
+        function showModal(imageUrls) {
+            console.log("showModal called with imageUrls:", imageUrls);
+
+            var carouselInner = document.getElementById('carouselInner');
+            var carouselIndicators = document.getElementById('carouselIndicators');
+            carouselInner.innerHTML = '';
+            carouselIndicators.innerHTML = '';
+
+            imageUrls.forEach((imageUrl, index) => {
+                var activeClass = (index === 0) ? ' active' : '';
+
+                // Create carousel item
+                var div = document.createElement('div');
+                div.className = 'carousel-item' + activeClass;
+                var img = document.createElement('img');
+                img.className = 'd-block w-100';
+                img.src = imageUrl;
+                div.appendChild(img);
+                carouselInner.appendChild(div);
+
+                // Create carousel indicator
+                var li = document.createElement('li');
+                li.setAttribute('data-target', '#carouselExampleIndicators');
+                li.setAttribute('data-slide-to', index);
+                if (index === 0) {
+                    li.className = 'active';
+                }
+                carouselIndicators.appendChild(li);
+            });
+
+            $('#imageModal').modal('show');
+        }
+
+        function filterResults() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const results = document.querySelectorAll('.results');
+
+            results.forEach(result => {
+                const title = result.querySelector('.title').textContent.toLowerCase();
+                const price = result.querySelector('.price').textContent.toLowerCase();
+                const delivery = result.querySelector('.delivery').textContent.toLowerCase();
+
+                if (title.includes(searchTerm) || price.includes(searchTerm) || delivery.includes(searchTerm)) {
+                    result.style.display = 'flex';
+                } else {
+                    result.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
 {% endblock %}

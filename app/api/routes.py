@@ -1,6 +1,8 @@
 from flask import jsonify, request
 from app.api import bp
 from app.models import User, Listings
+from app import db
+from app import admin_permission, permission_required, super_admin_permission
 import json
 
 @bp.route('/user_id/<int:id>', methods=['GET'])
@@ -58,8 +60,6 @@ def create_listing():
             "destination_time": "2024-12-01T18:00:00",
             "fair_cost": 500.00,
             "transport_type": "Airplane",
-            "business_tickets": 10,
-            "economy_tickets": 50
             }
         
         # Extract the required fields
@@ -69,10 +69,8 @@ def create_listing():
         destination_time = datetime.strptime(data['destination_time'], '%Y-%m-%dT%H:%M:%S')
         fair_cost = data['fair_cost']
         transport_type = data['transport_type']
-        business_tickets = data['business_tickets']
-        economy_tickets = data['economy_tickets']
         
-        result = Listings.create_listing(depart_location, depart_time, destination_location, destination_time, fair_cost, transport_type, business_tickets, economy_tickets)
+        result = Listings.create_listing(depart_location, depart_time, destination_location, destination_time, fair_cost, transport_type)
 
         if result is None:
             return jsonify({'error': 'User not found'}), 404
@@ -90,34 +88,52 @@ def create_listing():
 
 # Sample data
 data = [
-    {"Name": "Tiger Nixon", "Position": "System Architect", "Office": "Edinburgh", "Age": 61, "StartDate": "2011-04-25", "Salary": "$320,800"},
-    {"Name": "Garrett Winters", "Position": "Accountant", "Office": "Tokyo", "Age": 63, "StartDate": "2011-07-25", "Salary": "$170,750"},
-    {"Name": "Ashton Cox", "Position": "Junior Technical Author", "Office": "San Francisco", "Age": 66, "StartDate": "2009-01-12", "Salary": "$86,000"},
-    {"Name": "Cedric Kelly", "Position": "Senior Javascript Developer", "Office": "Edinburgh", "Age": 22, "StartDate": "2012-03-29", "Salary": "$433,060"},
-    {"Name": "Airi Satou", "Position": "Accountant", "Office": "Tokyo", "Age": 33, "StartDate": "2008-11-28", "Salary": "$162,700"},
-    {"Name": "Brielle Williamson", "Position": "Integration Specialist", "Office": "New York", "Age": 61, "StartDate": "2012-12-02", "Salary": "$372,000"},
-    {"Name": "Herrod Chandler", "Position": "Sales Assistant", "Office": "San Francisco", "Age": 59, "StartDate": "2012-08-06", "Salary": "$137,500"},
-    {"Name": "Rhona Davidson", "Position": "Integration Specialist", "Office": "Tokyo", "Age": 55, "StartDate": "2010-10-14", "Salary": "$327,900"},
-    {"Name": "Colleen Hurst", "Position": "Javascript Developer", "Office": "San Francisco", "Age": 39, "StartDate": "2009-09-15", "Salary": "$205,500"},
-    {"Name": "Sonya Frost", "Position": "Software Engineer", "Office": "Edinburgh", "Age": 23, "StartDate": "2008-12-13", "Salary": "$103,600"},
-    {"Name": "Jena Gaines", "Position": "Office Manager", "Office": "London", "Age": 30, "StartDate": "2008-12-19", "Salary": "$90,560"},
-    {"Name": "Quinn Flynn", "Position": "Support Lead", "Office": "Edinburgh", "Age": 22, "StartDate": "2013-03-03", "Salary": "$342,000"},
-    {"Name": "Charde Marshall", "Position": "Regional Director", "Office": "San Francisco", "Age": 36, "StartDate": "2008-10-16", "Salary": "$470,600"},
-    {"Name": "Haley Kennedy", "Position": "Senior Marketing Designer", "Office": "London", "Age": 43, "StartDate": "2012-12-18", "Salary": "$313,500"},
-    {"Name": "Tatyana Fitzpatrick", "Position": "Regional Director", "Office": "London", "Age": 19, "StartDate": "2010-03-17", "Salary": "$385,750"},
-    {"Name": "Michael Silva", "Position": "Marketing Designer", "Office": "London", "Age": 66, "StartDate": "2012-11-27", "Salary": "$198,500"},
-    {"Name": "Paul Byrd", "Position": "Chief Financial Officer (CFO)", "Office": "New York", "Age": 64, "StartDate": "2010-06-09", "Salary": "$725,000"},
-    {"Name": "Gloria Little", "Position": "Systems Administrator", "Office": "New York", "Age": 59, "StartDate": "2009-04-10", "Salary": "$237,500"},
-    {"Name": "Bradley Greer", "Position": "Software Engineer", "Office": "London", "Age": 41, "StartDate": "2012-10-13", "Salary": "$132,000"},
-    {"Name": "Dai Rios", "Position": "Personnel Lead", "Office": "Edinburgh", "Age": 35, "StartDate": "2012-09-26", "Salary": "$217,500"},
-    {"Name": "Jenette Caldwell", "Position": "Development Lead", "Office": "New York", "Age": 30, "StartDate": "2011-09-03", "Salary": "$345,000"},
+    {"depart_location": "Tiger Nixon", "depart_time": "System Architect", "destination_location": "Edinburgh", "destination_time": 61, "fair_cost": "2011-04-25", "transport_type": "$320,800"},
 ]
 
-@bp.route('/api/get_data', methods=['GET'])
+@bp.route('get_data', methods=['GET'])
+@permission_required(super_admin_permission)
 def get_data():
-    min_age = request.args.get('min_age', type=int, default=0)
-    max_age = request.args.get('max_age', type=int, default=100)
-    
-    filtered_data = [entry for entry in data if min_age <= entry['Age'] <= max_age]
-    return jsonify(filtered_data)
+    query = db.session.query(Listings)
 
+    # Retrieve filter parameters from the request
+    depart_location = request.args.get('depart_location')
+    destination_location = request.args.get('destination_location')
+    min_depart_time = request.args.get('min_depart_time')
+    max_depart_time = request.args.get('max_depart_time')
+    min_fair_cost = request.args.get('min_fair_cost')
+    max_fair_cost = request.args.get('max_fair_cost')
+    transport_type = request.args.get('transport_type')
+
+    # Apply filters dynamically
+    if depart_location:
+        query = query.filter(Listings.depart_location == depart_location)
+    if destination_location:
+        query = query.filter(Listings.destination_location == destination_location)
+    if min_depart_time:
+        query = query.filter(Listings.depart_time >= min_depart_time)
+    if max_depart_time:
+        query = query.filter(Listings.depart_time <= max_depart_time)
+    if min_fair_cost:
+        query = query.filter(Listings.fair_cost >= min_fair_cost)
+    if max_fair_cost:
+        query = query.filter(Listings.fair_cost <= max_fair_cost)
+    if transport_type:
+        query = query.filter(Listings.transport_type == transport_type)
+
+    # Fetch the filtered results in a single query
+    filtered_data = query.all()
+
+    # Convert the results to a list of dictionaries
+    result = [
+        {
+            'depart_location': listing.depart_location,
+            'depart_time': listing.depart_time,
+            'destination_location': listing.destination_location,
+            'destination_time': listing.destination_time,
+            'fair_cost': listing.fair_cost,
+            'transport_type': listing.transport_type
+        } for listing in filtered_data
+    ]
+
+    return jsonify(result)

@@ -20,4 +20,11 @@ def redirect_index():
 
 @bp.route('/listings')
 def listings():
-    return render_template('bookings/listings.html')
+    all_listings = Listings.get_all_listings()
+    
+    return render_template('bookings/listings.html', items=all_listings)
+
+@bp.route('/listing/<int:id>')
+def show_listing(id):
+    Listings.get
+    return render_template('bookings/listings.html', id=1)

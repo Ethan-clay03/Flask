@@ -32,10 +32,12 @@ def listings():
             item.main_image_url = url_for('main.upload_file', filename=item.listing_images[0].image_location)
         else:
             item.main_image_url = "/path/to/default-image.jpg"
-
-        item.image_urls = json.dumps([url_for('main.upload_file', filename=img.image_location) for img in item.listing_images])
+        # Must replace with single quotes otherwise JS does not load modal correctly
+        item.image_urls = json.dumps([url_for('main.upload_file', filename=img.image_location) for img in item.listing_images]).replace('"', '&quot;')
 
     return render_template('bookings/listings.html', items=all_listings)
+
+
 
 
 @bp.route('/listing/<int:id>')

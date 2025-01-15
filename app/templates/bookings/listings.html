@@ -6,10 +6,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simplified Carousel Example</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <style>
         .container {
             width: 60%;
@@ -83,13 +79,9 @@
         
         <div id="resultsContainer">
         {% for item in items %}
-        <div class="results" onclick="window.location.href='/bookings/listing/{{ item.id }}'">
+        <div class="results" onclick="handleClick(event, {{ item.id }})">
             <div>
-                {% if item.listing_images and item.listing_images[0] %}
-                    <img src="{{ url_for('main.upload_file', filename=item.listing_images[0].image_location) }}" alt="Main Image" class="main-image" onclick="event.stopPropagation(); showModal([{% for image in item.listing_images %}'{{ url_for('main.upload_file', filename=image.image_location) }}'{% if not loop.last %}, {% endif %}{% endfor %}])">
-                {% else %}
-                    <img src="/path/to/default-image.jpg" alt="Default Image" class="main-image">
-                {% endif %}
+                <img src="{{ item.main_image_url }}" alt="Main Image" class="main-image" onclick="event.stopPropagation(); showModal({{ item.image_urls | safe }});">
             </div>
             <div>
                 <div class="title">{{ item.depart_location }}</div>
@@ -97,9 +89,8 @@
                 <div class="delivery">{{ item.destination_location }}</div>
                 <div>Save up to 10% with multi-buy</div>
             </div>
-    </div>
-{% endfor %}
-
+        </div>
+        {% endfor %}
         </div>
     </div>
 
@@ -142,6 +133,7 @@
             });
         });
 
+        // Shows pop up with images attached to specific booking
         function showModal(imageUrls) {
             console.log("showModal called with imageUrls:", imageUrls);
 
@@ -162,7 +154,7 @@
                 div.appendChild(img);
                 carouselInner.appendChild(div);
 
-                // Create carousel indicator
+                // Create carousel indicators
                 var li = document.createElement('li');
                 li.setAttribute('data-target', '#carouselExampleIndicators');
                 li.setAttribute('data-slide-to', index);
@@ -190,6 +182,13 @@
                     result.style.display = 'none';
                 }
             });
+        }
+
+        // Only redirects when image is NOT clicked
+        function handleClick(event, id) {
+            if (!event.target.classList.contains('main-image')) {
+                window.location.href = '/bookings/listing/' + id;
+            }
         }
     </script>
 </body>

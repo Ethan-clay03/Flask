@@ -98,6 +98,10 @@
     <script>
         // Initialize Bootstrap modal with jQuery
         $(document).ready(function() {
+            $('.select2-multiple').select2({ 
+                width: 'resolve', // Automatically adjust width 
+                placeholder: 'Select an option', });
+
             $('#imageModal .btn-close, #imageModal .btn-secondary').on('click', function() {
                 console.log("Close button clicked");
                 $('#imageModal').modal('hide');

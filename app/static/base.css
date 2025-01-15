@@ -146,6 +146,14 @@ Form styling options
     text-decoration: none;
 }
 
+/* 
+    MODAL CSS
+*/
+/* Ensure dropdown appears in front of modal */
+.select2-container--open { 
+    z-index: 2000; 
+}
+
 /* HEX codes for colours used through out website don't delete */
 
 /* Colour pallete taken from https://visme.co/blog/website-color-schemes/

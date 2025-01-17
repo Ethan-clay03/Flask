@@ -96,24 +96,24 @@ data = [
 def get_data():
     query = db.session.query(Listings)
 
-    # Retrieve filter parameters from the request
     depart_location = request.args.get('depart_location')
     destination_location = request.args.get('destination_location')
-    min_depart_time = request.args.get('min_depart_time')
-    max_depart_time = request.args.get('max_depart_time')
+    depart_before_time = request.args.get('depart_before_time')
+    arrive_after_time = request.args.get('arrive_after_time')
     min_fair_cost = request.args.get('min_fair_cost')
     max_fair_cost = request.args.get('max_fair_cost')
     transport_type = request.args.get('transport_type')
 
-    # Apply filters dynamically
     if depart_location:
-        query = query.filter(Listings.depart_location == depart_location)
+        depart_locations = depart_location.split(',')
+        query = query.filter(Listings.depart_location.in_(depart_locations))
     if destination_location:
-        query = query.filter(Listings.destination_location == destination_location)
-    if min_depart_time:
-        query = query.filter(Listings.depart_time >= min_depart_time)
-    if max_depart_time:
-        query = query.filter(Listings.depart_time <= max_depart_time)
+        destination_locations = destination_location.split(',')
+        query = query.filter(Listings.destination_location.in_(destination_locations))
+    if depart_before_time:
+        query = query.filter(Listings.depart_time <= depart_before_time)
+    if arrive_after_time:
+        query = query.filter(Listings.destination_time >= arrive_after_time)
     if min_fair_cost:
         query = query.filter(Listings.fair_cost >= min_fair_cost)
     if max_fair_cost:
@@ -121,16 +121,13 @@ def get_data():
     if transport_type:
         query = query.filter(Listings.transport_type == transport_type)
 
-    # Fetch the filtered results in a single query
     filtered_data = query.all()
-
-    # Convert the results to a list of dictionaries
     result = [
         {
             'depart_location': listing.depart_location,
-            'depart_time': listing.depart_time,
+            'depart_time': listing.depart_time.strftime("%H:%M"),
             'destination_location': listing.destination_location,
-            'destination_time': listing.destination_time,
+            'destination_time': listing.destination_time.strftime("%H:%M"),
             'fair_cost': listing.fair_cost,
             'transport_type': listing.transport_type
         } for listing in filtered_data

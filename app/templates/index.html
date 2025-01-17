@@ -1,12 +1,151 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="date_selector">
-        <h2>Date selector / Searching</h2>
-        <input type="date" id="start" name="trip-start" value="{{today}}" min="{{today}}" max="2018-12-31" />
-        <input type="date" id="start" name="trip-end" value="{{tomorrow}}" min="{{tomorrow}}" max="2099-12-31" />
+<head>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='listings.css')}}">
+    <script src="https://cdn.jsdelivr.net/npm/swiffy-slider@1.6.0/dist/js/swiffy-slider.min.js" crossorigin="anonymous" defer></script>
+    <link href="https://cdn.jsdelivr.net/npm/swiffy-slider@1.6.0/dist/css/swiffy-slider.min.css" rel="stylesheet" crossorigin="anonymous">
+    <style>
+        .slider-wrapper {
+            transform: scale(0.8);
+            width: 100%;
+        }
+    </style>
+</head>
+<div class="container mt-4">
+    <form id="travelForm" class="row g-3">
+      <div class="col-md-6">
+        <label for="departLocation" class="form-label">Departure Location:</label>
+        <input type="text" class="form-control" id="departLocation" name="departLocation" required>
+      </div>
+      <div class="col-md-6">
+        <label for="departBeforeDate" class="form-label">Depart Before Date:</label>
+        <input type="date" class="form-control" id="departBeforeDate" name="departBeforeDate" required>
+      </div>
+      <div class="col-md-6">
+        <label for="departBeforeTime" class="form-label">Depart Before Time:</label>
+        <select class="form-control select2-dropdown" id="departBeforeTime" name="departBeforeTime" required>
+          <option value="" disabled selected>Select a time</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="arriveLocation" class="form-label">Arrival Location:</label>
+        <input type="text" class="form-control" id="arriveLocation" name="arriveLocation" required>
+      </div>
+      <div class="col-md-6">
+        <label for="arriveAfterDate" class="form-label">Arrive After Date:</label>
+        <input type="date" class="form-control" id="arriveAfterDate" name="arriveAfterDate" required>
+      </div>
+      <div class="col-md-6">
+        <label for="numSeats" class="form-label">Number of Seats:</label>
+        <input type="number" class="form-control" id="numSeats" name="numSeats" min="1" required>
+      </div>
+      <div class="col-md-6">
+        <label for="seatType" class="form-label">Seat Type:</label>
+        <select id="seatType" class="form-select" name="seatType">
+          <option value="economy">Economy</option>
+          <option value="business">Business</option>
+          <option value="firstClass">First Class</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="tripType" class="form-label">Trip Type:</label>
+        <select id="tripType" class="form-select" name="tripType" onchange="toggleReturnFields()">
+          <option value="oneWay">One-way</option>
+          <option value="return">Return</option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="returnDate" class="form-label">Return Date:</label>
+        <input type="date" class="form-control" id="returnDate" name="returnDate" disabled>
+      </div>
+      <div class="col-md-6">
+        <label for="returnTime" class="form-label">Return Time:</label>
+        <select class="form-control select2-dropdown" id="returnTime" name="returnTime" disabled>
+          <option value="" disabled selected>Select a time</option>
+        </select>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </form>
+  
+    <script>
+      $(document).ready(function() {
+        $('.select2-dropdown').select2({
+          placeholder: "Select a time",
+          width: '100%',
+          minimumResultsForSearch: Infinity
+        });
+  
+        const timeOptions = [
+          "00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00", "04:30",
+          "05:00", "05:30", "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30",
+          "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
+          "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30",
+          "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"
+        ];
+  
+        timeOptions.forEach(time => {
+          $('#departBeforeTime').append(new Option(time, time));
+          $('#arriveAfterTime').append(new Option(time, time));
+          $('#returnTime').append(new Option(time, time));
+        });
+      });
+  
+      function toggleReturnFields() {
+        var tripType = document.getElementById("tripType").value;
+        var returnDate = document.getElementById("returnDate");
+        var returnTime = document.getElementById("returnTime");
+        if (tripType === "return") {
+          returnDate.disabled = false;
+          returnTime.disabled = false;
+        } else {
+          returnDate.disabled = true;
+          returnTime.disabled = true;
+        }
+      }
+    </script>
+  </div>
+  
+  <div>
+    <div class="deals_text"><span class="deals_underline">Currently Hot Locations</span></div>
+    <div class="slider-wrapper">
+        <div class="swiffy-slider slider-item-show2 slider-item-reveal slider-nav-outside slider-nav-round slider-nav-visible slider-indicators-outside slider-indicators-round slider-indicators-dark slider-nav-animation slider-nav-animation-fadein slider-item-first-visible">
+            <ul class="slider-container py-4">
+                {% if get_flashed_messages() %}
+                <div class="alert alert-danger" role="alert">
+                    get_flashed_messages()
+                </div>
+                {% endif %}
+                {% for listing in top_listings %}
+                <li class="slide-visible">
+                    <div class="card shadow h-100">
+                        <div class="ratio ratio-16x9">
+                            <th>{{top_listing_images[listing.id]}}</th>
+                            <img src="{{ url_for('main.upload_file', filename=top_listing_images[listing.id]) }}" class="card-img-top" loading="lazy" alt="Main Image">
+                        </div>
+                        <div class="card-body p-3 p-xl-4">
+                            <h3 class="card-title h5">{{listing.destination_location}}</h3>
+                            <p class="card-text">Add Location description here once implemented</p>
+                            <div><a href="#" class="btn btn-primary">Book now</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        
+            <button type="button" class="slider-nav" aria-label="Go left"></button>
+            <button type="button" class="slider-nav slider-nav-next" aria-label="Go right"></button>
+        
+            <div class="slider-indicators">
+                <button class="active" aria-label="Go to slide"></button>
+                <button aria-label="Go to slide" class=""></button>
+                <button aria-label="Go to slide" class=""></button>
+                <button aria-label="Go to slide" class=""></button>
+            </div>
+        </div>
     </div>
-    <div>
-        <h3>Currently Hot Deals!</h3>
-    </div>
+</div>
 {% endblock %}

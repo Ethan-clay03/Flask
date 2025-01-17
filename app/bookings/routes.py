@@ -3,17 +3,6 @@ from app.bookings import bp
 from app.models import Listings, ListingImages 
 import json
 
-@bp.route('/home')
-def index():
-    listing_ids = []
-    top_listings = Listings.get_top_listings(5)
-    
-    for listing in top_listings:
-        listing_ids.append(listing.id)
-        
-    top_listing_images = ListingImages.get_selected_main_images(listing_ids)
-    
-    return render_template('bookings/index.html', top_listings=top_listings, top_listing_images=top_listing_images)
 
 @bp.route('/')
 def redirect_index():
@@ -32,7 +21,7 @@ def listings():
             item.main_image_url = url_for('main.upload_file', filename=item.listing_images[0].image_location)
         else:
             item.main_image_url = "/path/to/default-image.jpg"
-        # Must replace with single quotes otherwise JS does not load modal correctly
+        # Must be a single quote JSON otherwise doesn't work in frontend
         item.image_urls = json.dumps([url_for('main.upload_file', filename=img.image_location) for img in item.listing_images]).replace('"', '&quot;')
 
     return render_template('bookings/listings.html', items=all_listings)

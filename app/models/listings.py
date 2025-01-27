@@ -34,3 +34,22 @@ class Listings(db.Model):
     @classmethod
     def get_top_listings(cls, amount_of_listings=5):
         return cls.query.limit(amount_of_listings).all()
+    
+    @classmethod
+    def delete_listing(cls, booking_id = None):
+
+        listing =  cls.search_listing(booking_id)
+
+        if listing:
+            db.session.delete(listing)
+            db.session.commit()
+            return True
+        
+        return False
+    
+    @classmethod
+    def search_listing(cls, listing_id = None):
+        if listing_id == None:
+            return False
+    
+        return cls.query.get(listing_id)

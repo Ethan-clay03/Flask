@@ -1,5 +1,7 @@
-from flask import render_template, redirect, url_for
+from flask import render_template, redirect, url_for, request, jsonify
+from app import db
 from app import admin_permission, permission_required, super_admin_permission
+from app.models import Listings
 from app.admin import bp
 
 
@@ -28,9 +30,8 @@ def manage_users():
 def manage_user_bookings():
     return render_template('admin/index.html')
 
-
 @bp.route('get_bookings', methods=['GET'])
-@permission_required(super_admin_permission)
+@permission_required(admin_permission)
 def get_bookings():
     query = db.session.query(Listings)
 
@@ -73,3 +74,15 @@ def get_bookings():
     ]
 
     return jsonify(result)
+
+@bp.route('delete_booking', methods=['DELETE'])
+@permission_required(admin_permission)
+def delete_booking():
+    http_code = 400
+    booking_id = request.form.get('id')
+    success = Listings.delete_listing(booking_id)
+
+    if success:
+        http_code = 200
+
+    return jsonify(success), http_code

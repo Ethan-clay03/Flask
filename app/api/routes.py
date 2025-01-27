@@ -1,9 +1,6 @@
-from flask import jsonify, request
+from flask import jsonify
 from app.api import bp
 from app.models import User, Listings
-from app import db
-from app import admin_permission, permission_required, super_admin_permission
-import json
 
 @bp.route('/user_id/<int:id>', methods=['GET'])
 def get_user_by_id(id):

@@ -230,7 +230,7 @@
             const confirmation_input = $('#conifrmation_input').val().trim();
             if (confirmation_input === 'CONFIRM') {
                 $.ajax({
-                    url: "{{ url_for('admin.get_bookings') }}", // TO CHANGE
+                    url: "{{ url_for('admin.delete_booking') }}",
                     method: "DELETE",
                     data: { id: delete_booking.data().id },
                     success: function() {

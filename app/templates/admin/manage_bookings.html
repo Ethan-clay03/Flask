@@ -151,7 +151,8 @@
         });
 
         // Populate location options, TO UPDATE WITH LIVE LOCATIONS
-        const locations = ['USA', 'Budapest', 'Location3'].sort();
+        const locations = JSON.parse('{{ locations|tojson|safe }}');
+        locations.sort();
         locations.forEach(location => {
             $('#depart_location').append(new Option(location, location));
             $('#destination_location').append(new Option(location, location));
@@ -202,7 +203,7 @@
             language: {
                 emptyTable: "No bookings could be found with the current filters"
             },
-            createdRow: function(row, data, dataIndex) { //Attach ID to edit/delete buttons for use in modifying individual enteries
+            createdRow: function(row, data, dataIndex) { //Attach ID to edit button and delete button.
                 $(row).find('.edit-btn').attr('data-id', data.id);
                 $(row).find('.delete-btn').attr('data-id', data.id);
             }
@@ -216,9 +217,9 @@
 
         $('#manage_bookings tbody').on('click', '.edit-btn', function() {
             const id = $(this).data('id');
-            const data = table.row($(this).parents('tr')).data();
-            alert('Edit entry for ' + data.depart_location + ' with ID ' + id);
+            window.location.href = `manage_bookings/edit/${id}`;
         });
+
 
         let delete_booking;
         $('#manage_bookings tbody').on('click', '.delete-btn', function() {
@@ -242,7 +243,7 @@
                     }
                 });
             } else {
-                alert('Please type "CONFIRM" to delete the entry.');
+                alert('Please type "CONFIRM" to delete the booking.');
             }
         });
 

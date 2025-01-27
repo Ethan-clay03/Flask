@@ -1,6 +1,7 @@
 from sqlalchemy.orm import relationship
 from sqlalchemy import Time
 from app import db
+from sqlalchemy.sql import text
 
 class Listings(db.Model):
     __tablename__ = 'listings'
@@ -17,6 +18,12 @@ class Listings(db.Model):
     @classmethod
     def get_all_listings(cls):
         return cls.query.all()
+
+    @classmethod
+    def get_all_locations(cls):
+        query = text("SELECT depart_location AS location FROM listings UNION SELECT destination_location AS location FROM listings")
+        result = db.session.execute(query)
+        return [location[0] for location in result]
 
     @classmethod
     def create_listing(cls, depart_location, depart_time, destination_location, destination_time, fair_cost, transport_type):

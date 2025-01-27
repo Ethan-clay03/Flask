@@ -20,7 +20,7 @@ def listings():
         elif item.listing_images:
             item.main_image_url = url_for('main.upload_file', filename=item.listing_images[0].image_location)
         else:
-            item.main_image_url = "/path/to/default-image.jpg"
+            item.main_image_url = url_for('main.upload_file', filename='booking_image_not_found.jpg')
         # Must be a single quote JSON otherwise doesn't work in frontend
         item.image_urls = json.dumps([url_for('main.upload_file', filename=img.image_location) for img in item.listing_images]).replace('"', '&quot;')
 

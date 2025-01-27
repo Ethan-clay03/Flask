@@ -18,7 +18,15 @@ def home():
 @bp.route('/manage_bookings')
 @permission_required(admin_permission)
 def manage_bookings():
-    return render_template('admin/manage_bookings.html')
+    locations = Listings.get_all_locations()
+    return render_template('admin/manage_bookings.html', locations=locations)
+
+@bp.route('/manage_bookings/edit/<int:id>')
+@permission_required(admin_permission)
+def edit_booking(id):
+    locations = Listings.get_all_locations()
+    listing_information = Listings.search_listing(id)
+    return render_template('admin/edit_booking.html', locations=locations, listing=listing_information)
 
 @bp.route('/manage_users')
 @permission_required(super_admin_permission)

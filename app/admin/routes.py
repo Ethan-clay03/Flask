@@ -27,3 +27,49 @@ def manage_users():
 @permission_required(admin_permission)
 def manage_user_bookings():
     return render_template('admin/index.html')
+
+
+@bp.route('get_bookings', methods=['GET'])
+@permission_required(super_admin_permission)
+def get_bookings():
+    query = db.session.query(Listings)
+
+    depart_location = request.args.get('depart_location')
+    destination_location = request.args.get('destination_location')
+    depart_before_time = request.args.get('depart_before_time')
+    arrive_after_time = request.args.get('arrive_after_time')
+    min_fair_cost = request.args.get('min_fair_cost')
+    max_fair_cost = request.args.get('max_fair_cost')
+    transport_type = request.args.get('transport_type')
+
+    if depart_location:
+        depart_locations = depart_location.split(',')
+        query = query.filter(Listings.depart_location.in_(depart_locations))
+    if destination_location:
+        destination_locations = destination_location.split(',')
+        query = query.filter(Listings.destination_location.in_(destination_locations))
+    if depart_before_time:
+        query = query.filter(Listings.depart_time <= depart_before_time)
+    if arrive_after_time:
+        query = query.filter(Listings.destination_time >= arrive_after_time)
+    if min_fair_cost:
+        query = query.filter(Listings.fair_cost >= min_fair_cost)
+    if max_fair_cost:
+        query = query.filter(Listings.fair_cost <= max_fair_cost)
+    if transport_type:
+        query = query.filter(Listings.transport_type == transport_type)
+
+    filtered_data = query.all()
+    result = [
+        {
+            'id': listing.id,
+            'depart_location': listing.depart_location,
+            'depart_time': listing.depart_time.strftime("%H:%M"),
+            'destination_location': listing.destination_location,
+            'destination_time': listing.destination_time.strftime("%H:%M"),
+            'fair_cost': listing.fair_cost,
+            'transport_type': listing.transport_type
+        } for listing in filtered_data
+    ]
+
+    return jsonify(result)

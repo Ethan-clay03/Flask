@@ -11,34 +11,36 @@
             width: 100%;
         }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" defer></script>
 </head>
 <div class="container mt-4">
     <form id="travelForm" class="row g-3">
       <div class="col-md-6">
         <label for="departLocation" class="form-label">Departure Location:</label>
-        <input type="text" class="form-control" id="departLocation" name="departLocation" required>
-      </div>
-      <div class="col-md-6">
-        <label for="departBeforeDate" class="form-label">Depart Before Date:</label>
-        <input type="date" class="form-control" id="departBeforeDate" name="departBeforeDate" required>
-      </div>
-      <div class="col-md-6">
-        <label for="departBeforeTime" class="form-label">Depart Before Time:</label>
-        <select class="form-control select2-dropdown" id="departBeforeTime" name="departBeforeTime" required>
-          <option value="" disabled selected>Select a time</option>
+        <select class="form-select select2-multiple" id="departLocation" name="departLocation" required>
+          <option value="" disabled selected>Select locations</option>
         </select>
       </div>
       <div class="col-md-6">
-        <label for="arriveLocation" class="form-label">Arrival Location:</label>
-        <input type="text" class="form-control" id="arriveLocation" name="arriveLocation" required>
+        <label for="departureDate" class="form-label">Departure Date:</label>
+        <input type="date" class="form-control" id="departDate" name="departDate" required>
       </div>
       <div class="col-md-6">
-        <label for="arriveAfterDate" class="form-label">Arrive After Date:</label>
-        <input type="date" class="form-control" id="arriveAfterDate" name="arriveAfterDate" required>
+        <label for="destinationLocation" class="form-label">Destination Location:</label>
+        <select class="form-select select2-multiple" id="destinationLocation" name="destinationLocation" required>
+          <option value="" disabled selected>Select locations</option>
+        </select>
       </div>
       <div class="col-md-6">
         <label for="numSeats" class="form-label">Number of Seats:</label>
-        <input type="number" class="form-control" id="numSeats" name="numSeats" min="1" required>
+        <select class="form-select" id="numSeats" name="numSeats" required>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
       </div>
       <div class="col-md-6">
         <label for="seatType" class="form-label">Seat Type:</label>
@@ -59,40 +61,12 @@
         <label for="returnDate" class="form-label">Return Date:</label>
         <input type="date" class="form-control" id="returnDate" name="returnDate" disabled>
       </div>
-      <div class="col-md-6">
-        <label for="returnTime" class="form-label">Return Time:</label>
-        <select class="form-control select2-dropdown" id="returnTime" name="returnTime" disabled>
-          <option value="" disabled selected>Select a time</option>
-        </select>
-      </div>
       <div class="col-12">
         <button type="submit" class="btn btn-primary">Search</button>
       </div>
     </form>
   
     <script>
-      $(document).ready(function() {
-        $('.select2-dropdown').select2({
-          placeholder: "Select a time",
-          width: '100%',
-          minimumResultsForSearch: Infinity
-        });
-  
-        const timeOptions = [
-          "00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00", "04:30",
-          "05:00", "05:30", "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30",
-          "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
-          "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30",
-          "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"
-        ];
-  
-        timeOptions.forEach(time => {
-          $('#departBeforeTime').append(new Option(time, time));
-          $('#arriveAfterTime').append(new Option(time, time));
-          $('#returnTime').append(new Option(time, time));
-        });
-      });
-  
       function toggleReturnFields() {
         var tripType = document.getElementById("tripType").value;
         var returnDate = document.getElementById("returnDate");
@@ -105,19 +79,26 @@
           returnTime.disabled = true;
         }
       }
+
+      $(document).ready(function() {
+        $('.select2-multiple').select2({
+            placeholder: "Select locations",
+            width: '100%'
+        });
+
+        const locations = ['USA', 'Budapest', 'Location3', 'Location3', 'Location3'].sort();
+        locations.forEach(location => {
+            $('#departLocation').append(new Option(location, location));
+            $('#destinationLocation').append(new Option(location, location));
+        });
+      });
     </script>
   </div>
-  
   <div>
     <div class="deals_text"><span class="deals_underline">Currently Hot Locations</span></div>
     <div class="slider-wrapper">
         <div class="swiffy-slider slider-item-show2 slider-item-reveal slider-nav-outside slider-nav-round slider-nav-visible slider-indicators-outside slider-indicators-round slider-indicators-dark slider-nav-animation slider-nav-animation-fadein slider-item-first-visible">
             <ul class="slider-container py-4">
-                {% if get_flashed_messages() %}
-                <div class="alert alert-danger" role="alert">
-                    get_flashed_messages()
-                </div>
-                {% endif %}
                 {% for listing in top_listings %}
                 <li class="slide-visible">
                     <div class="card shadow h-100">

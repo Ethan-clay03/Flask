@@ -16,6 +16,14 @@ This repository is for viewing purposes only. Unauthorized copying, reproduction
 
 If you have any questions or would like to discuss this project further, please feel free to reach out.
 
+## Updates and planned changes
+All updates and planned changes are made via a public Trello which tracks what tasks are done and are a work in progress
+https://trello.com/b/WILg5Qio/flask-website
+
+
+## Current setup documentation is out of date and may result in errors. Please contact me for help getting setup if you are NOT using Docker. 
+
+
 ## Getting setup
 
 If you wish to try out the site locally you are able to do so using Docker, which will run both the site and database. Alternatively

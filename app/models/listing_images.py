@@ -1,6 +1,10 @@
 from sqlalchemy import Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from app import db
+import os
+from werkzeug.utils import secure_filename
+from flask import current_app
+import uuid
 
 class ListingImages(db.Model):
     __tablename__ = 'listing_images'
@@ -22,3 +26,40 @@ class ListingImages(db.Model):
         ordered_listing_images = {listing.listing_id: listing.image_location for listing in listing_images}
 
         return ordered_listing_images
+
+    @staticmethod
+    def allowed_file(filename):
+        allowed_extensions = current_app.config['ALLOWED_EXTENSIONS']
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
+    @staticmethod
+    def save_image(file, listing_id):
+        if file and ListingImages.allowed_file(file.filename):
+            extension = file.filename.rsplit('.', 1)[1].lower()
+            filename = f"{listing_id}_{uuid.uuid4().hex}.{extension}"  #Change to make all files uploaded unique to prevent collisions
+            upload_folder = current_app.config['BOOKING_IMAGE_UPLOADS']
+            file_path = os.path.join(upload_folder, filename)
+
+            try:
+                os.makedirs(upload_folder, exist_ok=True)
+                file.save(file_path)
+                new_image = ListingImages(
+                    listing_id=listing_id,
+                    image_location=filename,
+                    main_image=False
+                )
+                db.session.add(new_image)
+                return new_image
+            except Exception as e:
+                print(f"Error saving file: {e}")
+                return None
+        else:
+            return False
+
+    @classmethod
+    def set_main_image(cls, listing_id, image_id):
+        cls.query.filter_by(listing_id=listing_id).update({'main_image': False})
+        main_image = cls.query.filter_by(id=image_id, listing_id=listing_id).first()
+        if main_image:
+            main_image.main_image = True
+            db.session.commit()

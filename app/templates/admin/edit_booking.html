@@ -1,133 +1,125 @@
 {% extends 'base.html' %}
-{% macro time_options(selected_time) %}
-    {% for time in ["00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00", "04:30", 
-                    "05:00", "05:30", "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", 
-                    "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", 
-                    "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", 
-                    "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"] %}
-        <option value="{{ time }}" {% if selected_time == time %}selected{% endif %}>{{ time }}</option>
-    {% endfor %}
-{% endmacro %}
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Booking</title>
-    <link rel="stylesheet" href="path/to/your/css/style.css">
-</head>
-<body>
-    <div class="container mt-4">
-        <h2>Edit Booking</h2>
-        <form id="editBookingForm" class="row g-3" action="{{ url_for('admin.get_bookings', id=listing.id) }}" method="post" enctype="multipart/form-data">
-            <div class="col-md-6">
-                <label for="departLocation" class="form-label">Departure Location:</label>
-                <select class="form-select select2-multiple" id="departLocation" name="departLocation" required>
-                    <option value="" disabled selected>Select locations</option>
-                    {% for location in locations %}
-                        <option value="{{ location }}" {% if location == listing.depart_location %}selected{% endif %}>{{ location }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label for="departTime" class="form-label">Departure Time:</label>
-                <select class="form-control select2-dropdown" id="departTime" name="departTime" required>
-                    <option value="" disabled selected>Select a time</option>
-                    {{ time_options(listing.depart_time.strftime('%H:%M')) }}
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label for="destinationLocation" class="form-label">Destination Location:</label>
-                <select class="form-select select2-multiple" id="destinationLocation" name="destinationLocation" required>
-                    <option value="" disabled selected>Select locations</option>
-                    {% for location in locations %}
-                        <option value="{{ location }}" {% if location == listing.destination_location %}selected{% endif %}>{{ location }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label for="destinationTime" class="form-label">Arrival Time:</label>
-                <select class="form-control select2-dropdown" id="destinationTime" name="destinationTime" required>
-                    <option value="" disabled selected>Select a time</option>
-                    {{ time_options(listing.destination_time.strftime('%H:%M')) }}
-                </select>
-            </div>
-            
-            <script>
-                $(document).ready(function() {
-                    $('.select2-dropdown').select2({
-                        placeholder: "Select a time",
-                        width: '100%',
-                        minimumResultsForSearch: Infinity
-                    });
-                });
-            </script>
-                      
-            <div class="col-md-6">
-                <label for="fairCost" class="form-label">Fair Cost:</label>
-                <input type="number" step="0.01" class="form-control" id="fairCost" name="fairCost" value="{{ listing.fair_cost }}" required>
-            </div>
-            <div class="col-md-6">
-                <label for="transportType" class="form-label">Transport Type:</label>
-                <select id="transportType" class="form-select" name="transportType" value="Airplane" disabled>
-                    <option value="Airplane">Airplane</option>
-                </select>
-            </div>
-            <div class="col-md-12">
-                <label for="images" class="form-label">Upload Images:</label>
-                <input type="file" class="form-control" id="images" name="images" multiple>
-                <div class="current-images mt-3">
-                    <h4>Current Images:</h4>
-                    <div class="row">
-                        {% for image in listing.listing_images %}
-                        <div class="col-md-3 mb-3">
-                            <div class="card">
-                                <div class="image-container">
-                                    <img src="{{ url_for('main.upload_file', filename=image.image_location) }}" class="img-thumbnail">
-                                </div>
-                                <div class="card-body">
-                                    <input type="radio" class="btn-check" name="main_image" id="{{image.id}}" value="{{ image.main_image }}" autocomplete="off" {% if image.main_image == 1 %}checked{% endif %}>
-                                    <label class="btn btn-outline-success w-100" id="{{image.id}}">Main Image</label>
+<div class="container mt-4">
+    <h2>Edit Booking</h2>
+    <form id="editBookingForm" class="row g-3" action="{{ url_for('admin.update_booking', id=listing.id) }}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-6">
+            <label for="departLocation" class="form-label">Departure Location:</label>
+            <select class="form-select select2-multiple" id="departLocation" name="departLocation" required>
+                <option value="" disabled selected>Select locations</option>
+                {% for location in locations %}
+                    <option value="{{ location }}" {% if location == listing.depart_location %}selected{% endif %}>{{ location }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="departTime" class="form-label">Departure Time:</label>
+            <select class="form-control select2-dropdown" id="departTime" name="departTime" required>
+                <option value="" disabled>Select a time</option>
+                {% for time in time_options %}
+                    <option value="{{ time }}" {% if time == depart_time_str %}selected{% endif %}>{{ time }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="destinationLocation" class="form-label">Destination Location:</label>
+            <select class="form-select select2-multiple" id="destinationLocation" name="destinationLocation" required>
+                <option value="" disabled selected>Select locations</option>
+                {% for location in locations %}
+                    <option value="{{ location }}" {% if location == listing.destination_location %}selected{% endif %}>{{ location }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="destinationTime" class="form-label">Arrival Time:</label>
+            <select class="form-control select2-dropdown" id="destinationTime" name="destinationTime" required>
+                <option value="" disabled>Select a time</option>
+                {% for time in time_options %}
+                    <option value="{{ time }}" {% if time == destination_time_str %}selected{% endif %}>{{ time }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="fairCost" class="form-label">Fair Cost:</label>
+            <input type="number" step="0.01" class="form-control" id="fairCost" name="fairCost" value="{{ listing.fair_cost }}" required>
+        </div>
+        <div class="col-md-6">
+            <label for="transportType" class="form-label">Transport Type:</label>
+            <select id="transportType" class="form-select" name="transportType" value="Airplane" disabled>
+                <option value="Airplane">Airplane</option>
+            </select>
+        </div>
+        <div class="col-md-12">
+            <label for="images" class="form-label">Upload Images:</label>
+            <input type="file" class="form-control" id="images" name="images" multiple>
+            <div class="current-images mt-3">
+                <h4>Current Images:</h4>
+                <div class="row">
+                    {% for image in listing.listing_images %}
+                    <div class="col-md-3 mb-3">
+                        <div class="card">
+                            <div class="image-container">
+                                <img src="{{ url_for('main.upload_file', filename=image.image_location) }}" class="img-thumbnail">
+                            </div>
+                            <div class="card-body">
+                                <input type="radio" class="btn-check" name="main_image" id="{{image.id}}" value="{{ image.id }}" autocomplete="off" {% if image.main_image == 1 %}checked{% endif %}>
+                                <label class="btn btn-outline-success w-100" for="{{image.id}}">Main Image</label>
 
-                                    <button type="button" class="btn btn-danger btn-sm mt-2 delete-image-btn w-100">Delete</button>
-                                </div>
+                                <button type="button" class="btn btn-danger btn-sm mt-2 delete-image-btn w-100" data-image="{{ image.image_location }}">Delete</button>
                             </div>
                         </div>
-                        {% endfor %}
                     </div>
+                    {% endfor %}
                 </div>
             </div>
-            <div class="col-12">
-                <button type="submit" class="btn btn-primary">Update Booking</button>
-            </div>
-        </form>
-    </div>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Update Booking</button>
+        </div>
+    </form>
+</div>
 
-    <script>
-        // JavaScript to handle image deletion
-        document.querySelectorAll('.delete-image-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const image = this.getAttribute('data-image');
-                this.closest('.col-md-3').remove();
-                // Add logic to handle image deletion in the backend
-                console.log('Deleted image:', image);
-            });
+<script>
+    $('.select2-dropdown').select2({
+        width: '100%',
+        minimumResultsForSearch: Infinity
+    });
+
+    const time_options = [
+        "00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00", "04:30",
+        "05:00", "05:30", "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30",
+        "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
+        "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30",
+        "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"
+    ];
+
+    // Add time_options to filter elements
+    time_options.forEach(time => {
+        $('#departTime').append(new Option(time, time));
+        $('#destinationTime').append(new Option(time, time));
+    });
+
+    // JavaScript to handle image deletion
+    document.querySelectorAll('.delete-image-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const image = this.getAttribute('data-image');
+            this.closest('.col-md-3').remove();
+            console.log('Deleted image:', image);
         });
-    </script>
-</body>
-</html>
+    });
+</script>
 <style>
     .image-container {
         position: relative;
-        width: 100%; 
-        padding-top: 100%; 
-        overflow: hidden; 
+        width: 100%;
+        padding-top: 100%;
+        overflow: hidden;
         display: flex;
         justify-content: center;
         align-items: center;
     }
-    
+
     .image-container img {
         position: absolute;
         top: 50%;
@@ -135,7 +127,7 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transform: translate(-50%, -50%); /* Makes image center */
+        transform: translate(-50%, -50%);
     }
-    </style>
+</style>
 {% endblock %}

@@ -1,8 +1,9 @@
-from flask import render_template, redirect, url_for, request, jsonify
+from flask import render_template, redirect, url_for, request, jsonify, current_app
 from app import db
 from app import admin_permission, permission_required, super_admin_permission
-from app.models import Listings
+from app.models import Listings, ListingImages
 from app.admin import bp
+from app.main.utils import save_booking_image
 
 
 @bp.route('/home')
@@ -26,7 +27,20 @@ def manage_bookings():
 def edit_booking(id):
     locations = Listings.get_all_locations()
     listing_information = Listings.search_listing(id)
-    return render_template('admin/edit_booking.html', locations=locations, listing=listing_information)
+    time_options = [
+        "00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00", "04:30",
+        "05:00", "05:30", "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30",
+        "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
+        "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30",
+        "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"
+    ]
+    
+    # Use the instance of the listing_information object to format the times
+    depart_time_str = listing_information.depart_time.strftime("%H:%M")
+    destination_time_str = listing_information.destination_time.strftime("%H:%M")
+                                                             
+    return render_template('admin/edit_booking.html', locations=locations, listing=listing_information, time_options=time_options, depart_time_str=depart_time_str, destination_time_str=destination_time_str)
+
 
 @bp.route('/manage_users')
 @permission_required(super_admin_permission)
@@ -37,6 +51,66 @@ def manage_users():
 @permission_required(admin_permission)
 def manage_user_bookings():
     return render_template('admin/index.html')
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@bp.route('update_booking/<int:id>', methods=['POST'])
+@permission_required(admin_permission)
+def update_booking(id):
+    depart_location = request.form.get('departLocation')
+    destination_location = request.form.get('destinationLocation')
+    depart_time = request.form.get('departTime')
+    destination_time = request.form.get('destinationTime')
+    fair_cost = request.form.get('fairCost')
+    transport_type = request.form.get('transportType')
+    images = request.files.getlist('images')
+    main_image_id = request.form.get('main_image')
+
+    listing = Listings.query.get(id)
+    if listing:
+        if depart_location:
+            listing.depart_location = depart_location
+        if destination_location:
+            listing.destination_location = destination_location
+        if depart_time:
+            listing.depart_time = depart_time
+        if destination_time:
+            listing.destination_time = destination_time
+        if fair_cost:
+            listing.fair_cost = fair_cost
+        if transport_type:
+            listing.transport_type = transport_type
+
+        try:
+            ListingImages.set_main_image(listing.id, main_image_id)
+            # Wrap upload of images in transaction in case any weird issues occur
+            for image in images:
+                new_image = ListingImages.save_image(image, listing.id)
+                if new_image == False:
+                    continue
+                if new_image == None:
+                    raise Exception("Failed to save image")
+                
+            db.session.commit()
+        except Exception as e:
+            print(f"Error: {e}")
+            db.session.rollback()
+            locations = Listings.get_all_locations()
+            listing_information = Listings.search_listing(id)
+            return render_template(
+                'admin/edit_booking.html', 
+                locations=locations, 
+                listing=listing_information, 
+                error="An error occurred while updating the booking."
+            )
+        
+    locations = Listings.get_all_locations()
+    return redirect(url_for('admin.manage_bookings'))
+
+
 
 @bp.route('get_bookings', methods=['GET'])
 @permission_required(admin_permission)

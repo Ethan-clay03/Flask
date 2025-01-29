@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, request, jsonify, current_app
+from flask import render_template, redirect, url_for, request, jsonify, flash
 from app import db
 from app import admin_permission, permission_required, super_admin_permission
 from app.models import Listings, ListingImages
@@ -108,6 +108,7 @@ def update_booking(id):
             )
         
     locations = Listings.get_all_locations()
+    flash('Successfully updated booking', 'success')
     return redirect(url_for('admin.manage_bookings'))
 
 
@@ -154,7 +155,7 @@ def get_bookings():
             'transport_type': listing.transport_type
         } for listing in filtered_data
     ]
-
+    
     return jsonify(result)
 
 @bp.route('delete_booking', methods=['DELETE'])

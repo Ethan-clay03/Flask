@@ -20,7 +20,7 @@ def signup():
         # Validate form data
         error = validate_signup_form(form_data)
         if error:
-            flash(error)
+            flash(error, 'error')
             return redirect(url_for('profile.signup'))
 
         # Create new user and log in automatically
@@ -37,7 +37,7 @@ def signup():
             return redirect(url_for('profile.index'))
         except Exception as e:
             auth_logger.error(f"Unable to create user: {e}")
-            flash('An error occurred. Please try again.')
+            flash('An error occurred. Please try again.', 'error')
             return redirect(url_for('profile.signup'))
 
     return render_template('profile/signup.html')
@@ -76,8 +76,8 @@ def login_post():
         user = User.search_user_by_username(username_field)
 
     if not user or not check_password_hash(user.password, password):
-        flash('Please check your login details and try again.')
-        return redirect(url_for('profile.login', error=True))
+        flash('Invalid username/email and or password. Please try again or <a href="' + url_for('profile.password_reset') + '">reset your password here</a>.', 'danger')
+        return redirect(url_for('profile.login'))
 
     login_user(user, remember=remember)
 
@@ -130,9 +130,9 @@ def logout():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('profile.index'))
-    #Check if login is being sent due to error
-    error = request.args.get('error')
-    return render_template('profile/login.html', error=error)
+
+    #user not logged in
+    return render_template('profile/login.html')
 
 
 @bp.route('/password-reset')
@@ -148,11 +148,11 @@ def check_password_reset_1():
     #Search to see if username already exists
     user_exist = User.search_user_by_username(username)
     if user_exist is None:
-        return flash('Username does not exist')
+        return flash('Username does not exist', 'error')
     
     email_exist = User.search_user_by_email(email)
     if email_exist is None:
-        return flash('Email does not exist')
+        return flash('Email does not exist', 'error')
 
     session['password-reset-email'] = email
     return redirect(url_for('profile.password_reset_2'))
@@ -171,7 +171,7 @@ def check_password_reset_2():
     if code == '123456' or code == '234567':
         return redirect(url_for('profile.password_reset_3'))
     
-    return flash('Invalid 2FA Code')
+    return flash('Invalid 2FA Code', 'error')
 
 
 @bp.route('/password-reset/reset-password')
@@ -181,14 +181,17 @@ def password_reset_3():
 
 @bp.route('/password-reset/reset-password', methods=['POST'])
 def password_reset_process():
-    email = session.get('email')
-    password1 = session.get('password-1')
-    password2 = session.get('password-2')
+    email = session.get('password-reset-email')
+    password1 = request.form.get('password-1')
+    password2 = request.form.get('password-2')
     
     #Simulate 2FA code being entered
     if password1 == password2:
         User.change_user_password(email, password1)
-        return redirect(url_for('profile.password_reset_3'))
+        flash('Password was updated successfully', 'success')
+        return redirect(url_for('profile.login'))
+    flash('Passwords must match', 'error')
+    return redirect(url_for('profile.password_reset_3'))
 
 @login_required
 @bp.route('/home')

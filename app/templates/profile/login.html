@@ -1,13 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="column is-4 is-offset-4">
-
-{% if get_flashed_messages() %}
-<div class="alert alert-danger" role="alert">
-    Invalid username/email and or password. Please try again or 
-    <a href="{{ url_for('profile.password_reset') }}">reset your password here</a>.
-</div>
-{% endif %}
     <div id="login-box" class="form_box_30" style="margin-top: 30px;">
         <div class="profile_form_background">
             <h2 class="form_header">Login</h2>
@@ -22,7 +15,7 @@
                     <input type="password" class="form-control" name="password">
                 </div>
                 <div class="mb-3">
-                    <a class="clear-hyperlink" href="{{ url_for('profile.login_post') }}">Forgot Password?</a>
+                    <a class="clear-hyperlink" href="{{ url_for('profile.password_reset') }}">Forgot Password?</a>
                 </div>
                 <div class="mb-3 form-check">
                     <input type="checkbox" class="form-check-input" id="remember" name="remember">

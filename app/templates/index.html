@@ -2,102 +2,102 @@
 
 {% block content %}
 <head>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='listings.css')}}">
-    <script src="https://cdn.jsdelivr.net/npm/swiffy-slider@1.6.0/dist/js/swiffy-slider.min.js" crossorigin="anonymous" defer></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='listings.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/swiffy-slider@1.6.0/dist/css/swiffy-slider.min.css" rel="stylesheet" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/swiffy-slider@1.6.0/dist/js/swiffy-slider.min.js" crossorigin="anonymous" defer></script>
     <style>
         .slider-wrapper {
             transform: scale(0.8);
             width: 100%;
         }
     </style>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" defer></script>
 </head>
 <div class="container mt-4">
     <form id="travelForm" class="row g-3">
-      <div class="col-md-6">
-        <label for="departLocation" class="form-label">Departure Location:</label>
-        <select class="form-select select2-multiple" id="departLocation" name="departLocation" required>
-          <option value="" disabled selected>Select locations</option>
-        </select>
-      </div>
-      <div class="col-md-6">
-        <label for="departureDate" class="form-label">Departure Date:</label>
-        <input type="date" class="form-control" id="departDate" name="departDate" required>
-      </div>
-      <div class="col-md-6">
-        <label for="destinationLocation" class="form-label">Destination Location:</label>
-        <select class="form-select select2-multiple" id="destinationLocation" name="destinationLocation" required>
-          <option value="" disabled selected>Select locations</option>
-        </select>
-      </div>
-      <div class="col-md-6">
-        <label for="numSeats" class="form-label">Number of Seats:</label>
-        <select class="form-select" id="numSeats" name="numSeats" required>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-        </select>
-      </div>
-      <div class="col-md-6">
-        <label for="seatType" class="form-label">Seat Type:</label>
-        <select id="seatType" class="form-select" name="seatType">
-          <option value="economy">Economy</option>
-          <option value="business">Business</option>
-          <option value="firstClass">First Class</option>
-        </select>
-      </div>
-      <div class="col-md-6">
-        <label for="tripType" class="form-label">Trip Type:</label>
-        <select id="tripType" class="form-select" name="tripType" onchange="toggleReturnFields()">
-          <option value="oneWay">One-way</option>
-          <option value="return">Return</option>
-        </select>
-      </div>
-      <div class="col-md-6">
-        <label for="returnDate" class="form-label">Return Date:</label>
-        <input type="date" class="form-control" id="returnDate" name="returnDate" disabled>
-      </div>
-      <div class="col-12">
-        <button type="submit" class="btn btn-primary">Search</button>
-      </div>
+        <div class="col-md-6">
+            <label for="departLocation" class="form-label">Departure Location:</label>
+            <select class="form-select select2-multiple" id="departLocation" name="departLocation" required>
+                <option value="" disabled selected>Select locations</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="departureDate" class="form-label">Departure Date:</label>
+            <input type="date" class="form-control" id="departDate" name="departDate" required>
+        </div>
+        <div class="col-md-6">
+            <label for="destinationLocation" class="form-label">Destination Location:</label>
+            <select class="form-select select2-multiple" id="destinationLocation" name="destinationLocation" required>
+                <option value="" disabled selected>Select locations</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="numSeats" class="form-label">Number of Seats:</label>
+            <select class="form-select" id="numSeats" name="numSeats" required>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="seatType" class="form-label">Seat Type:</label>
+            <select id="seatType" class="form-select" name="seatType">
+                <option value="economy">Economy</option>
+                <option value="business">Business</option>
+                <option value="firstClass">First Class</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="tripType" class="form-label">Trip Type:</label>
+            <select id="tripType" class="form-select" name="tripType" onchange="toggleReturnFields()">
+                <option value="oneWay">One-way</option>
+                <option value="return">Return</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="returnDate" class="form-label">Return Date:</label>
+            <input type="date" class="form-control" id="returnDate" name="returnDate" disabled>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
     </form>
-  
+
     <script>
-      function toggleReturnFields() {
-        var tripType = document.getElementById("tripType").value;
-        var returnDate = document.getElementById("returnDate");
-        var returnTime = document.getElementById("returnTime");
-        if (tripType === "return") {
-          returnDate.disabled = false;
-          returnTime.disabled = false;
-        } else {
-          returnDate.disabled = true;
-          returnTime.disabled = true;
+        function toggleReturnFields() {
+            var tripType = document.getElementById("tripType").value;
+            var returnDate = document.getElementById("returnDate");
+            var returnTime = document.getElementById("returnTime");
+            if (tripType === "return") {
+                returnDate.disabled = false;
+                returnTime.disabled = false;
+            } else {
+                returnDate.disabled = true;
+                returnTime.disabled = true;
+            }
         }
-      }
 
-      $(document).ready(function() {
-        $('.select2-multiple').select2({
-            placeholder: "Select locations",
-            width: '100%'
-        });
+        $(document).ready(function () {
+            $('.select2-multiple').select2({
+                placeholder: "Select locations",
+                width: '100%'
+            });
 
-        const locations = ['USA', 'Budapest', 'Location3', 'Location3', 'Location3'].sort();
-        locations.forEach(location => {
-            $('#departLocation').append(new Option(location, location));
-            $('#destinationLocation').append(new Option(location, location));
+            const locations = ['USA', 'Budapest', 'Location3', 'Location3', 'Location3'].sort();
+            locations.forEach(location => {
+                $('#departLocation').append(new Option(location, location));
+                $('#destinationLocation').append(new Option(location, location));
+            });
         });
-      });
     </script>
-  </div>
-  <div>
+</div>
+<div>
     <div class="deals_text"><span class="deals_underline">Currently Hot Locations</span></div>
     <div class="slider-wrapper">
-        <div class="swiffy-slider slider-item-show2 slider-item-reveal slider-nav-outside slider-nav-round slider-nav-visible slider-indicators-outside slider-indicators-round slider-indicators-dark slider-nav-animation slider-nav-animation-fadein slider-item-first-visible">
+        <div class="swiffy-slider slider-item-show2 slider-item-reveal slider-nav-outside slider-nav-round slider-nav-visible slider-nav-loop slider-indicators-outside slider-indicators-round slider-indicators-dark slider-nav-animation slider-nav-animation-fadein slider-item-first-visible">
             <ul class="slider-container py-4">
                 {% for listing in top_listings %}
                 <li class="slide-visible">
@@ -116,15 +116,15 @@
                 </li>
                 {% endfor %}
             </ul>
-        
-            <button type="button" class="slider-nav" aria-label="Go left"></button>
+
+            <button type="button" class="slider-nav slider-nav-prev" aria-label="Go left"></button>
             <button type="button" class="slider-nav slider-nav-next" aria-label="Go right"></button>
-        
+
             <div class="slider-indicators">
                 <button class="active" aria-label="Go to slide"></button>
-                <button aria-label="Go to slide" class=""></button>
-                <button aria-label="Go to slide" class=""></button>
-                <button aria-label="Go to slide" class=""></button>
+                <button aria-label="Go to slide"></button>
+                <button aria-label="Go to slide"></button>
+                <button aria-label="Go to slide"></button>
             </div>
         </div>
     </div>

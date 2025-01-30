@@ -222,28 +222,17 @@
         });
     });
 
-    function logMessage(errorMessage, type) {
+    function logMessage(log_message, type) {
         fetch('{{ url_for("main.log_message") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': '{{ csrf_token() }}'
             },
-            body: JSON.stringify({ error: errorMessage, type: type })
+            body: JSON.stringify({ log_message: log_message, type: type })
         });
     }
 
-
-    function logMessage(error_message, type) {
-        fetch('{{ url_for("main.log_message") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ error: error_message, type: type })
-        })
-    }
 
 
 </script>

@@ -36,22 +36,26 @@ class ListingImages(db.Model):
     def save_image(file, listing_id):
         if file and ListingImages.allowed_file(file.filename):
             extension = file.filename.rsplit('.', 1)[1].lower()
-            filename = f"{listing_id}_{uuid.uuid4().hex}.{extension}"  #Change to make all files uploaded unique to prevent collisions
+            filename = f"{listing_id}_{uuid.uuid4().hex}.{extension}"  # Unique filename
             upload_folder = current_app.config['BOOKING_IMAGE_UPLOADS']
             file_path = os.path.join(upload_folder, filename)
 
             try:
                 os.makedirs(upload_folder, exist_ok=True)
                 file.save(file_path)
+
+                # Create and save new image record
                 new_image = ListingImages(
                     listing_id=listing_id,
                     image_location=filename,
                     main_image=False
                 )
                 db.session.add(new_image)
+                db.session.commit()  # Commit here to ensure `id` is generated
                 return new_image
             except Exception as e:
                 print(f"Error saving file: {e}")
+                db.session.rollback()
                 return None
         else:
             return False

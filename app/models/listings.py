@@ -21,8 +21,8 @@ class Listings(db.Model):
 
     @classmethod
     def get_all_locations(cls):
-        query = text("SELECT depart_location AS location FROM listings UNION SELECT destination_location AS location FROM listings")
-        result = db.session.execute(query)
+        all_locations = text("SELECT depart_location AS location FROM listings UNION SELECT destination_location AS location FROM listings")
+        result = db.session.execute(all_locations)
         return [location[0] for location in result]
 
     @classmethod

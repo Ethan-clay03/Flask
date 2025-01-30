@@ -1,15 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mt-4">
-    <h2>Edit Booking</h2>
-    <form id="editBookingForm" class="row g-3" action="{{ url_for('admin.update_booking', id=listing.id) }}" method="post" enctype="multipart/form-data">
+    <h2>Create New Booking</h2>
+    <!-- UPDATE BELOW TO MAKE NEW BOOKING DASFHISOD)HAISOD -->
+    <form id="createBookingForm" class="row g-3" action="{{ url_for('admin.create_listing_post') }}" method="post" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="col-md-6">
             <label for="departLocation" class="form-label">Departure Location:</label>
             <select class="form-select select2-multiple" id="departLocation" name="departLocation" required>
                 <option value="" disabled selected>Select locations</option>
                 {% for location in locations %}
-                    <option value="{{ location }}" {% if location == listing.depart_location %}selected{% endif %}>{{ location }}</option>
+                    <option value="{{ location }}">{{ location }}</option>
                 {% endfor %}
             </select>
             <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#addLocationModal">Add New Location</button>
@@ -19,7 +20,7 @@
             <select class="form-select select2-multiple" id="destinationLocation" name="destinationLocation" required>
                 <option value="" disabled selected>Select locations</option>
                 {% for location in locations %}
-                    <option value="{{ location }}" {% if location == listing.destination_location %}selected{% endif %}>{{ location }}</option>
+                    <option value="{{ location }}">{{ location }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -28,7 +29,7 @@
             <select class="form-control select2-dropdown" id="departTime" name="departTime" required>
                 <option value="" disabled>Select a time</option>
                 {% for time in time_options %}
-                    <option value="{{ time }}" {% if time == depart_time_str %}selected{% endif %}>{{ time }}</option>
+                    <option value="{{ time }}">{{ time }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -37,46 +38,26 @@
             <select class="form-control select2-dropdown" id="destinationTime" name="destinationTime" required>
                 <option value="" disabled>Select a time</option>
                 {% for time in time_options %}
-                    <option value="{{ time }}" {% if time == destination_time_str %}selected{% endif %}>{{ time }}</option>
+                    <option value="{{ time }}">{{ time }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="col-md-6">
             <label for="fairCost" class="form-label">Fair Cost:</label>
-            <input type="number" step="0.01" class="form-control" id="fairCost" name="fairCost" value="{{ listing.fair_cost }}" required>
+            <input type="number" step="0.01" class="form-control" id="fairCost" name="fairCost" required>
         </div>
         <div class="col-md-6">
             <label for="transportType" class="form-label">Transport Type:</label>
-            <select id="transportType" class="form-select" name="transportType" value="Airplane" disabled>
+            <select id="transportType" class="form-select" name="transportType" value="Airplane" readonly>
                 <option value="Airplane">Airplane</option>
             </select>
         </div>
         <div class="col-md-12">
             <label for="images" class="form-label">Upload Images:</label>
             <input type="file" class="form-control" id="images" name="images" multiple>
-            <div class="current-images mt-3">
-                <h4>Current Images:</h4>
-                <div class="row">
-                    {% for image in listing.listing_images %}
-                    <div class="col-md-3 mb-3">
-                        <div class="card">
-                            <div class="image-container">
-                                <img src="{{ url_for('main.upload_file', filename=image.image_location) }}" class="img-thumbnail">
-                            </div>
-                            <div class="card-body">
-                                <input type="radio" class="btn-check" name="main_image" id="{{image.id}}" value="{{ image.id }}" autocomplete="off" {% if image.main_image == 1 %}checked{% endif %}>
-                                <label class="btn btn-outline-success w-100" for="{{image.id}}">Main Image</label>
-
-                                <button type="button" class="btn btn-danger btn-sm mt-2 delete-image-btn w-100" data-image-id="{{ image.id }}">Delete</button>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
         </div>
         <div class="col-12">
-            <button type="submit" class="btn btn-primary">Update Booking</button>
+            <button type="submit" class="btn btn-primary">Create Booking</button>
         </div>
     </form>
 </div>
@@ -102,12 +83,12 @@
     </div>
 </div>
 
-<!-- Add Location Success -->
-<div class="modal fade" id="location_success" tabindex="-1" aria-labelledby="location_successLabel" aria-hidden="true">
+<!-- Location added successfully Modal -->
+<div class="modal fade" id="locationSuccessModal" tabindex="-1" aria-labelledby="locationSuccessModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="location_successLabel">Success</h5>
+                <h5 class="modal-title" id="locationSuccessModalLabel">Success</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -118,21 +99,22 @@
     </div>
 </div>
 
-<!-- Add Location error modal does not use js alert or confirm anymore -->
-<div class="modal fade" id="location_error_modal" tabindex="-1" aria-labelledby="location_error_modalLabel" aria-hidden="true">
+<!-- Location already exists or invalid Modal -->
+<div class="modal fade" id="locationErrorModal" tabindex="-1" aria-labelledby="locationErrorModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="location_error_modalLabel">Error</h5>
+                <h5 class="modal-title" id="locationErrorModalLabel">Error</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Location already exists</p>
+                <p>Location already exists or is invalid.</p>
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal">OK</button>
             </div>
         </div>
     </div>
 </div>
+
 <script>
     $('.select2-dropdown').select2({
         width: '100%',
@@ -153,7 +135,7 @@
         $('#destinationTime').append(new Option(time, time));
     });
 
-    // Add New location to dropdowns (will clear upon reload OR if not exist in db) 
+    // Function to update dropdowns with new locations
     const updateDropdowns = (newLocations, dropdown) => {
         newLocations.forEach(location => {
             $(dropdown).append(new Option(location, location));
@@ -169,83 +151,13 @@
             locations.push(newLocation);
             updateDropdowns([newLocation], '#departLocation');
             updateDropdowns([newLocation], '#destinationLocation');
-            $('#location_success').modal('show');
+            $('#locationSuccessModal').modal('show');
             $('#addLocationModal').modal('hide');
             $('#newLocation').val('');
         } else {
-            $('#location_error_modal').modal('show');
+            $('#locationErrorModal').modal('show');
         }
     });
-
-    document.querySelectorAll('.delete-image-btn').forEach(button => {
-        button.addEventListener('click', function () {
-            const imageId = this.getAttribute('data-image-id');
-            if (!imageId) {
-                logMessage('Image ID not found when trying to delete image', 'error');
-                return;
-            }
-
-            if (!confirm('Are you sure you want to delete this image?')) {
-                return;
-            }
-
-            const image_container = this.closest('.col-md-3');
-            const delete_url = `{{ url_for('admin.delete_image', image_id=0) }}`.replace('0', imageId);
-
-            fetch(delete_url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token() }}'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    image_container.remove();
-                    const username = "{{ current_user.username }}";
-                    logMessage(`User ${username} has deleted Image ID: ${imageId}`, 'app');
-
-                    // Auto-select the first image as the new main image if the deleted one was the main image
-                    if (data.image_id) {
-                        const first_image = document.querySelector('input[name="main_image"]');
-                        if (first_image) {
-                            first_image.checked = true;
-                            logMessage('Selected new main image:', first_image.id, 'debug');
-                        }
-                    }
-                } else {
-                    logMessage(`Failed to delete image: ${data.error}`, 'error');
-                }
-            })
-            .catch(error => logMessage('Error: ' + error, 'error'));
-        });
-    });
-
-    function logMessage(errorMessage, type) {
-        fetch('{{ url_for("main.log_message") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ error: errorMessage, type: type })
-        });
-    }
-
-
-    function logMessage(error_message, type) {
-        fetch('{{ url_for("main.log_message") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ error: error_message, type: type })
-        })
-    }
-
-
 </script>
 <style>
     .image-container {

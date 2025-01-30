@@ -1,4 +1,4 @@
-from flask import Flask, g, abort, current_app, request
+from flask import Flask, g, abort, current_app, request, session, redirect, url_for
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -99,6 +99,18 @@ def create_app(config_class=Config):
                 'user_permission': g.user_permission,
                 'super_admin_permission': g.super_admin_permission
             }
+        
+    # @app.errorhandler(Exception)
+    # def handle_exception(e):
+    #     app.logger.error(f"Unhandled exception: {e}")
+    #     session['error_message'] = str(e)
+    #     return redirect(url_for('errors.quandary'))
+    
+    @app.errorhandler(403)
+    def handle_exception(e):
+        app.logger.error(f"Unhandled exception: {e}")
+        session['error_message'] = str(e)
+        return redirect(url_for('errors.quandary'))
 
     @app.before_request
     def before_request():
@@ -143,10 +155,3 @@ def register_blueprints(app):
     for module_name, url_prefix in blueprints:
         module = __import__(f'app.{module_name}', fromlist=['bp'])
         app.register_blueprint(module.bp, url_prefix=url_prefix)
-
-# @app.errorhandler(Exception)
-    # def handle_exception(e):
-    #     app.logger.error(f"Unhandled exception: {e}")
-    #     session['error_message'] = str(e)
-    #     return redirect(url_for('errors.quandary'))
-    #     pass

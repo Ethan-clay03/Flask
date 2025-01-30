@@ -3,9 +3,14 @@
 <div class="container my-4">
     <div class="d-flex justify-content-between mb-3">
         <h2>Manage Bookings</h2>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
-            <i class="fa-solid fa-filter"></i> Filter
-        </button>
+        <div>
+            <a href="{{ url_for('admin.create_listing') }}" class="btn btn-success">
+                <i class="fa-solid fa-plus"></i> Create New Listing
+            </a>    
+            <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="fa-solid fa-filter"></i> Filter
+            </button>
+        </div>
     </div>
     <!-- Hidden Filter Modal -->
     <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">

@@ -158,6 +158,69 @@ def get_bookings():
     
     return jsonify(result)
 
+@bp.route('create_listing', methods=['GET'])
+@permission_required(admin_permission)
+def create_listing():
+    locations = Listings.get_all_locations()
+    return render_template('admin/create_listing.html', locations=locations)
+
+
+@bp.route('create_listing', methods=['POST'])
+@permission_required(admin_permission)
+def create_listing_post():
+    # Extract form data
+    depart_location = request.form.get('departLocation')
+    destination_location = request.form.get('destinationLocation')
+    depart_time = request.form.get('departTime')
+    destination_time = request.form.get('destinationTime')
+    fair_cost = request.form.get('fairCost')
+    transport_type = request.form.get('transportType')
+    images = request.files.getlist('images')
+
+    # Create the listing instance
+    new_listing = Listings(
+        depart_location=depart_location,
+        destination_location=destination_location,
+        depart_time=depart_time,
+        destination_time=destination_time,
+        fair_cost=fair_cost,
+        transport_type=transport_type
+    )
+
+    try:
+        # Commit the new listing to get the ID
+        db.session.add(new_listing)
+        db.session.commit()
+
+        # Save images and track the first one as the main image
+        main_image_id = None
+
+        for idx, image in enumerate(images):
+            saved_image = ListingImages.save_image(image, new_listing.id)
+
+            if not saved_image:
+                continue
+
+            if idx == 0:
+                main_image_id = saved_image.id
+
+        # Set main image if available
+        if main_image_id:
+            ListingImages.set_main_image(new_listing.id, main_image_id)
+
+        db.session.commit()
+
+    except Exception as e:
+        print(f"Error: {e}")
+        db.session.rollback()
+        locations = Listings.get_all_locations()
+        flash('An error occurred while creating the booking. Please try again', 'error')
+        return render_template('admin/create_booking.html', locations=locations)
+
+    flash('Successfully created booking', 'success')
+    return redirect(url_for('admin.manage_bookings'))
+
+
 @bp.route('delete_booking', methods=['DELETE'])
 @permission_required(admin_permission)
 def delete_booking():
@@ -169,3 +232,28 @@ def delete_booking():
         http_code = 200
 
     return jsonify(success), http_code
+
+@bp.route('/delete_image/<int:image_id>', methods=['POST'])
+@permission_required(admin_permission)
+def delete_image(image_id):
+    try:
+        image_to_delete = ListingImages.query.get_or_404(image_id)
+        listing_id = image_to_delete.listing_id
+
+        db.session.delete(image_to_delete)
+        db.session.commit()
+
+        new_main_image_id = None
+        if image_to_delete.main_image:
+            # Find another image for the same listing to set as main
+            new_main_image = ListingImages.query.filter_by(listing_id=listing_id).first()
+            if new_main_image:
+                new_main_image.main_image = True
+                db.session.commit()
+                new_main_image_id = new_main_image.id
+
+        return jsonify({'success': True, 'message': 'Image deleted successfully.', 'image_id': new_main_image_id})
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500

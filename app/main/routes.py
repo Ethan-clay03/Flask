@@ -1,6 +1,7 @@
-from flask import render_template, send_from_directory
+from flask import render_template, send_from_directory, request
 from app.models import Listings, ListingImages
 from app.main import bp
+from app.logger import *
 import datetime
 import os
 
@@ -28,3 +29,27 @@ def upload_file(filename):
     
     upload_folder = os.path.join(os.getcwd(), 'app/uploads')
     return send_from_directory(upload_folder, f'listing_images/{filename}')
+
+# Should only be used by ajax calls
+@bp.route('/log_message', methods=['POST'])
+def log_message():
+    data = request.get_json()
+    log_message = data.get('log_message')
+    log_type = data.get('type')
+    
+    if log_type == 'app':
+        app_logger.info(log_message)
+    
+    if log_type == 'db':
+        db_logger.info(log_message)
+
+    if log_type == 'auth':
+        auth_logger.info(log_message)
+
+    if log_type == 'error':
+        error_logger.info(log_message)
+
+    if log_type == 'debug':
+        debug_logger.info(log_message)
+
+    return True

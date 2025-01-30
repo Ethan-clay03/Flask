@@ -2,7 +2,7 @@ from sqlalchemy import Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from app import db
 import os
-from werkzeug.utils import secure_filename
+from app.main.utils import allowed_image_files
 from flask import current_app
 import uuid
 
@@ -28,13 +28,8 @@ class ListingImages(db.Model):
         return ordered_listing_images
 
     @staticmethod
-    def allowed_file(filename):
-        allowed_extensions = current_app.config['ALLOWED_EXTENSIONS']
-        return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
-
-    @staticmethod
     def save_image(file, listing_id):
-        if file and ListingImages.allowed_file(file.filename):
+        if file and allowed_image_files(file.filename):
             extension = file.filename.rsplit('.', 1)[1].lower()
             filename = f"{listing_id}_{uuid.uuid4().hex}.{extension}"  # Unique filename
             upload_folder = current_app.config['BOOKING_IMAGE_UPLOADS']

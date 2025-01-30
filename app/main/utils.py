@@ -2,24 +2,15 @@
 
 import os
 from flask import current_app
-from werkzeug.utils import secure_filename
+from datetime import time
 
-
-def allowed_file(filename):
+def allowed_image_files(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
 
-def save_booking_image(file):
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(os.path.join(current_app.config['BOOKING_IMAGE_UPLOADS'], filename))
-
-        # Ensure the directory exists before saving images
-        os.makedirs(os.path.join(current_app.config['BOOKING_IMAGE_UPLOADS']), exist_ok=True)
-        
-        print(f"File Path: {file_path}")
-
-
-        file.save(file_path)
-        return filename
-    else:
-        return None
+def generate_time_options():
+    time_options = []
+    for hour in range(24):
+        for minute in range(0, 60, 5):
+            formatted_time = time(hour, minute).strftime('%H:%M')
+            time_options.append(formatted_time)
+    return time_options

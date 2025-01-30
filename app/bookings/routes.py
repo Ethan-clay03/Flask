@@ -31,5 +31,4 @@ def listings():
 
 @bp.route('/listing/<int:id>')
 def show_listing(id):
-    Listings.get
     return render_template('bookings/listings.html', id=1)

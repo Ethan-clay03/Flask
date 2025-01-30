@@ -3,7 +3,7 @@ from app import db
 from app import admin_permission, permission_required, super_admin_permission
 from app.models import Listings, ListingImages
 from app.admin import bp
-from app.main.utils import save_booking_image
+from app.main.utils import generate_time_options
 
 
 @bp.route('/home')
@@ -27,19 +27,20 @@ def manage_bookings():
 def edit_booking(id):
     locations = Listings.get_all_locations()
     listing_information = Listings.search_listing(id)
-    time_options = [
-        "00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00", "04:30",
-        "05:00", "05:30", "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30",
-        "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
-        "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30",
-        "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"
-    ]
-    
+
+    time_options = generate_time_options()
     # Use the instance of the listing_information object to format the times
     depart_time_str = listing_information.depart_time.strftime("%H:%M")
     destination_time_str = listing_information.destination_time.strftime("%H:%M")
                                                              
-    return render_template('admin/edit_booking.html', locations=locations, listing=listing_information, time_options=time_options, depart_time_str=depart_time_str, destination_time_str=destination_time_str)
+    return render_template(
+        'admin/edit_booking.html', 
+        locations=locations, 
+        listing=listing_information, 
+        time_options=time_options, 
+        depart_time_str=depart_time_str, 
+        destination_time_str=destination_time_str
+    )
 
 
 @bp.route('/manage_users')
@@ -52,10 +53,6 @@ def manage_users():
 def manage_user_bookings():
     return render_template('admin/index.html')
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @bp.route('update_booking/<int:id>', methods=['POST'])
 @permission_required(admin_permission)
@@ -161,7 +158,7 @@ def get_bookings():
 @bp.route('create_listing', methods=['GET'])
 @permission_required(admin_permission)
 def create_listing():
-    locations = Listings.get_all_locations()
+    locations = Listings.get_all_locations(True)
     return render_template('admin/create_listing.html', locations=locations)
 
 
@@ -215,7 +212,7 @@ def create_listing_post():
         db.session.rollback()
         locations = Listings.get_all_locations()
         flash('An error occurred while creating the booking. Please try again', 'error')
-        return render_template('admin/create_booking.html', locations=locations)
+        return render_template('admin/create_listing.html', locations=locations)
 
     flash('Successfully created booking', 'success')
     return redirect(url_for('admin.manage_bookings'))

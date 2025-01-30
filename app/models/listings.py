@@ -20,10 +20,15 @@ class Listings(db.Model):
         return cls.query.all()
 
     @classmethod
-    def get_all_locations(cls):
+    def get_all_locations(cls, ordered=False):
         all_locations = text("SELECT depart_location AS location FROM listings UNION SELECT destination_location AS location FROM listings")
         result = db.session.execute(all_locations)
-        return [location[0] for location in result]
+        listed_results = [location[0] for location in result]
+
+        if ordered:
+            return sorted(listed_results)
+        
+        return listed_results
 
     @classmethod
     def create_listing(cls, depart_location, depart_time, destination_location, destination_time, fair_cost, transport_type):

@@ -19,13 +19,13 @@ def home():
 @bp.route('/manage_bookings')
 @permission_required(admin_permission)
 def manage_bookings():
-    locations = Listings.get_all_locations()
+    locations = Listings.get_all_locations(True)
     return render_template('admin/manage_bookings.html', locations=locations)
 
 @bp.route('/manage_bookings/edit/<int:id>')
 @permission_required(admin_permission)
 def edit_booking(id):
-    locations = Listings.get_all_locations()
+    locations = Listings.get_all_locations(True)
     listing_information = Listings.search_listing(id)
 
     time_options = generate_time_options()
@@ -95,7 +95,7 @@ def update_booking(id):
         except Exception as e:
             print(f"Error: {e}")
             db.session.rollback()
-            locations = Listings.get_all_locations()
+            locations = Listings.get_all_locations(True)
             listing_information = Listings.search_listing(id)
             return render_template(
                 'admin/edit_booking.html', 
@@ -104,7 +104,7 @@ def update_booking(id):
                 error="An error occurred while updating the booking."
             )
         
-    locations = Listings.get_all_locations()
+    locations = Listings.get_all_locations(True)
     flash('Successfully updated booking', 'success')
     return redirect(url_for('admin.manage_bookings'))
 
@@ -210,7 +210,7 @@ def create_listing_post():
     except Exception as e:
         print(f"Error: {e}")
         db.session.rollback()
-        locations = Listings.get_all_locations()
+        locations = Listings.get_all_locations(True)
         flash('An error occurred while creating the booking. Please try again', 'error')
         return render_template('admin/create_listing.html', locations=locations)
 

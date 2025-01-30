@@ -157,7 +157,6 @@
 
         // Populate location options, TO UPDATE WITH LIVE LOCATIONS
         const locations = JSON.parse('{{ locations|tojson|safe }}');
-        locations.sort();
         locations.forEach(location => {
             $('#depart_location').append(new Option(location, location));
             $('#destination_location').append(new Option(location, location));

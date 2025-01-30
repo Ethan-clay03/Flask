@@ -1,55 +1,58 @@
 {% extends 'base.html' %}
 {% block content %}
-    <style>
-        .container {
-            width: 60%;
-            margin: 0 auto;
-            font-family: Arial, sans-serif;
-        }
-        .search-bar {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
-        }
-        .results {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 20px;
-            cursor: pointer;
-        }
-        .main-image {
-            max-width: 150px;
-            cursor: pointer;
-        }
-        .carousel-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .carousel-item {
-            height: 400px;
-        }
-        .carousel-inner {
-            position: relative;
-            height: 400px;
-            overflow: hidden;
-            display: flex;
-        }
-        .carousel-indicators li {
-            background-color: #000;
-        }
-    </style>
+<style>
+.select2-container {
+    width: 100% !important;
+}
+
+
+.results-container {
+    width: 60%;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+}
+
+.filter-button-container {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    text-align: right;
+}
+
+.results {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 20px;
+    cursor: pointer;
+}
+
+.main-image {
+    max-width: 150px;
+    cursor: pointer;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+}
+
+.form-control {
+    width: 100%;
+}
+
+</style>
+<head>
+    <script src="{{ url_for('static', filename='generic.js') }}"></script>
 </head>
-<body>
-    <div class="container">
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search...">
-            <button onclick="filterResults()">Search</button>
-        </div>
-        
-        <div id="resultsContainer">
+<div class="filter-button-container">
+    <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#filterModal">
+        <i class="fa-solid fa-filter"></i> Filter
+    </button>
+</div>
+
+<div class="results-container">
+    <div id="resultsContainer">
         {% for item in items %}
         <div class="results" onclick="handleClick(event, {{ item.id }})">
             <div>
@@ -63,110 +66,216 @@
             </div>
         </div>
         {% endfor %}
-        </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="imageModalLabel">Image Gallery</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Pagination Controls -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('bookings.listings', page=page - 1) }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            {%- for p in range(1, total_pages + 1) %}
+                <li class="page-item {% if p == page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('bookings.listings', page=p) }}">{{ p }}</a>
+                </li>
+            {%- endfor %}
+
+            {% if page < total_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('bookings.listings', page=page + 1) }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Image Gallery</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+                    <ol class="carousel-indicators" id="carouselIndicators"></ol>
+                    <div class="carousel-inner" id="carouselInner"></div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
                 </div>
-                <div class="modal-body">
-                    <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
-                        <ol class="carousel-indicators" id="carouselIndicators"></ol>
-                        <div class="carousel-inner" id="carouselInner"></div>
-                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Previous</span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Next</span>
-                        </button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Hidden Filter Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterModalLabel"><i class="fa-solid fa-filter"></i> Filter Options</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="filter-form">
+                    <div class="form-group">
+                        <label for="depart_location" class="form-label">Depart Location:</label>
+                        <select class="form-control select2-multiple" id="depart_location" name="depart_location[]" multiple="multiple">
+                        </select>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <div class="form-group">
+                        <label for="destination_location" class="form-label">Destination Location:</label>
+                        <select class="form-control select2-multiple" id="destination_location" name="destination_location[]" multiple="multiple">
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="min_fair_cost" class="form-label">Minimum Fair Cost:</label>
+                        <input type="number" class="form-control" id="min_fair_cost" name="min_fair_cost">
+                    </div>
+                    <div class="form-group">
+                        <label for="max_fair_cost" class="form-label">Maximum Fair Cost:</label>
+                        <input type="number" class="form-control" id="max_fair_cost" name="max_fair_cost">
+                    </div>
+                    <div class="form-group">
+                        <label for="transport_type" class="form-label">Transport Type:</label>
+                        <input type="text" class="form-control" id="transport_type" name="transport_type" value="Airplane" disabled>
+                    </div>                        
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <div>
+                    <button type="button" class="btn btn-primary" id="apply-filters">Apply Filters</button>
+                    <button type="button" class="btn btn-warning" id="reset-filters">Reset Filters</button>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // Initialize Bootstrap modal with jQuery
-        $(document).ready(function() {
-            $('.select2-multiple').select2({ 
-                width: 'resolve', // Automatically adjust width 
-                placeholder: 'Select an option', });
+<script>
+    $(document).ready(function () {
+        $('.select2-multiple').select2({
+            placeholder: "Select locations",
+            dropdownParent: $('#filterModal'),
+            width: '100%'
+        });
 
-            $('#imageModal .btn-close, #imageModal .btn-secondary').on('click', function() {
-                console.log("Close button clicked");
-                $('#imageModal').modal('hide');
+
+        const locations = JSON.parse('{{ locations|tojson|safe }}');
+        locations.forEach(location => {
+            $('#depart_location').append(new Option(location, location));
+            $('#destination_location').append(new Option(location, location));
+        });
+
+
+        // Apply filters from the modal
+        $('#apply-filters').click(function () {
+            const filterData = $('#filter-form').serializeArray().reduce((acc, field) => {
+                acc[field.name] = field.value;
+                return acc;
+            }, {});
+
+            //Get bookings which match the filter results user inputs
+            $.ajax({
+                url: "{{ url_for('bookings.filter_bookings') }}",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(filterData),
+                success: function (response) {
+                    $('#resultsContainer').html(response.html);
+                    $('#filterModal').modal('hide');
+                    $('.pagination').hide();  // Hide pagination as causes it to reset when changing page
+                },
+                error: function () {
+                    alert('Error applying filters. Please try again');
+                }
             });
         });
 
-        // Shows pop-up with images attached to specific booking
-        function showModal(imageUrls) {
-            console.log("showModal called with imageUrls:", imageUrls);
+        // Reset filters
+        $('#reset-filters').click(function () {
+            $('#filter-form')[0].reset(); // Reset filter modal
+            $('.pagination').show();  // Re-show pagination
 
-            var carouselInner = document.getElementById('carouselInner');
-            var carouselIndicators = document.getElementById('carouselIndicators');
-            carouselInner.innerHTML = '';
-            carouselIndicators.innerHTML = '';
-
-            imageUrls.forEach((imageUrl, index) => {
-                var activeClass = (index === 0) ? ' active' : '';
-
-                // Create carousel item
-                var div = document.createElement('div');
-                div.className = 'carousel-item' + activeClass;
-                var img = document.createElement('img');
-                img.className = 'd-block w-100';
-                img.src = imageUrl;
-                div.appendChild(img);
-                carouselInner.appendChild(div);
-
-                // Create carousel indicators
-                var li = document.createElement('li');
-                li.setAttribute('data-bs-target', '#carouselExampleIndicators');
-                li.setAttribute('data-bs-slide-to', index);
-                if (index === 0) {
-                    li.className = 'active';
-                }
-                carouselIndicators.appendChild(li);
-            });
-
-            var imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
-            imageModal.show();
-        }
-
-        function filterResults() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const results = document.querySelectorAll('.results');
-
-            results.forEach(result => {
-                const title = result.querySelector('.title').textContent.toLowerCase();
-                const price = result.querySelector('.price').textContent.toLowerCase();
-                const delivery = result.querySelector('.delivery').textContent.toLowerCase();
-
-                if (title.includes(searchTerm) || price.includes(searchTerm) || delivery.includes(searchTerm)) {
-                    result.style.display = 'flex';
-                } else {
-                    result.style.display = 'none';
+            $.ajax({
+                url: "{{ url_for('bookings.filter_bookings') }}",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({}), // Send empty filter data to re-show all listings
+                success: function (response) {
+                    $('#resultsContainer').html(response.html);
+                    $('#filterModal').modal('hide');
+                },
+                error: function () {
+                    alert('Error resetting filters.');
                 }
             });
-        }
+        });
 
-        // Only redirects when image is NOT clicked
-        function handleClick(event, id) {
-            if (!event.target.classList.contains('main-image')) {
-                window.location.href = '/bookings/listing/' + id;
+        $('.select2-multiple').select2({ 
+            width: 'resolve',
+            placeholder: 'Select an option'
+        });
+
+        // Close image modal
+        $('#imageModal .btn-close, #imageModal .btn-secondary').on('click', function() {
+            $('#imageModal').modal('hide');
+        });
+    });
+
+    // Shows pop-up with images attached to specific booking
+    function showModal(imageUrls) {
+        console.log("showModal called with imageUrls:", imageUrls);
+
+        var carouselInner = document.getElementById('carouselInner');
+        var carouselIndicators = document.getElementById('carouselIndicators');
+        carouselInner.innerHTML = '';
+        carouselIndicators.innerHTML = '';
+
+        imageUrls.forEach((imageUrl, index) => {
+            var activeClass = (index === 0) ? ' active' : '';
+
+            // Create carousel item
+            var div = document.createElement('div');
+            div.className = 'carousel-item' + activeClass;
+            var img = document.createElement('img');
+            img.className = 'd-block w-100';
+            img.src = imageUrl;
+            div.appendChild(img);
+            carouselInner.appendChild(div);
+
+            // Create carousel indicators
+            var li = document.createElement('li');
+            li.setAttribute('data-bs-target', '#carouselExampleIndicators');
+            li.setAttribute('data-bs-slide-to', index);
+            if (index === 0) {
+                li.className = 'active';
             }
-        }
-    </script>
+            carouselIndicators.appendChild(li);
+        });
+
+        var imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+        imageModal.show();
+    }
+
+</script>   
 </body>
 </html>
 {% endblock %}

@@ -20,3 +20,12 @@ const populateTimeDropdowns = (dropdownIds) => {
         });
     });
 };
+
+    //Ensure CSRF token added to any internal requests including forms
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!/^http(s)?:/.test(settings.url)) {
+                xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}");
+            }
+        }
+    });

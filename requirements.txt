@@ -10,3 +10,4 @@ debugpy
 flask-wtf
 flask-security
 flask-principal
+setuptools

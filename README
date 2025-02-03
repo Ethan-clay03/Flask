@@ -1,3 +1,6 @@
+## PLEASE READ ALL SETUP INSTRUCTIONS CAREFULLY AND IN FULL
+
+
 ## IMPORTANT, PLEASE READ THE BELOW BEFORE USING THE PROJECT
 
 ## Important Notice
@@ -20,8 +23,6 @@ If you have any questions or would like to discuss this project further, please 
 All updates and planned changes are made via a public Trello which tracks what tasks are done and are a work in progress
 https://trello.com/b/WILg5Qio/flask-website
 
-
-## Current setup documentation is out of date and may result in errors. Please contact me for help getting setup if you are NOT using Docker. 
 
 
 ## Getting setup
@@ -88,5 +89,12 @@ flask db migrate -m "Add age column to User model"
 ##########################################
 #              Database Commands         #
 ##########################################
-# Login to CSCT cloud and connect to ethan2clay_prj, alternatively copy .env-example and change the copy to .env and add your own database connection. 
-# It is advised to use the dockerised containers as this will mount a volume and retain your database entries.
+# Within the PR a MySQL dump is provided and loaded upon building of the docker container. If you are running the site outside a docker container
+# you will either need to follow one of the below options:
+
+# It is advised to use the dockerised containers as this will mount a SQL volume automatically.
+
+# Login to CSCT cloud and connect to ethan2clay_prj
+# Manually import the mysql dump provided within the sql folder
+
+# Add your own connector which can be done by changing .env 

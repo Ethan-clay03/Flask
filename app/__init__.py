@@ -48,7 +48,7 @@ def create_app(config_class=Config):
     db_password = os.getenv("DATABASE_PASSWORD")
     db_name = os.getenv("DATABASE_NAME")
     
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or 'your_secret_key'
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
     app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}"
 
     # Initialize extensions with the app

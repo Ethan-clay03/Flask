@@ -1,76 +1,49 @@
 {% extends 'base.html' %}
 {% block content %}
-<style>
-.select2-container {
-    width: 100% !important;
-}
-
-
-.results-container {
-    width: 60%;
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-}
-
-.filter-button-container {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    text-align: right;
-}
-
-.results {
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin-bottom: 20px;
-    display: flex;
-    gap: 20px;
-    cursor: pointer;
-}
-
-.main-image {
-    max-width: 150px;
-    cursor: pointer;
-}
-
-.modal-footer {
-    display: flex;
-    justify-content: space-between;
-}
-
-.form-control {
-    width: 100%;
-}
-
-</style>
-<head>
-    <script src="{{ url_for('static', filename='generic.js') }}"></script>
-</head>
-<div class="filter-button-container">
-    <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#filterModal">
-        <i class="fa-solid fa-filter"></i> Filter
-    </button>
-</div>
-
-<div class="results-container">
-    <div id="resultsContainer">
-        {% for item in items %}
-        <div class="results" onclick="handleClick(event, {{ item.id }})">
-            <div>
-                <img src="{{ item.main_image_url }}" alt="Main Image" class="main-image" onclick="event.stopPropagation(); showModal({{ item.image_urls | safe }});">
-            </div>
-            <div>
-                <div class="title">{{ item.depart_location }}</div>
-                <div class="price">{{ item.fair_cost }}</div>
-                <div class="delivery">{{ item.destination_location }}</div>
-                <div>Save up to 10% with multi-buy</div>
-            </div>
+<div class="my_container my-4">
+    <div class="results-container">
+        <div class="col-md-6 text-start mb-3 d-flex align-items-center flex-md-nowrap flex-wrap" id="dateContainer">
+            <label for="departureDate" class="form-label me-2">Departure Date:</label>
+            <input type="date" class="form-control me-2 flex-grow-1" id="departDate" name="departDate" required>
+            <button type="button" class="btn btn-warning" id="resetDate">
+                <i class="fa-solid fa-rotate-right"></i> Reset Date
+            </button>
         </div>
-        {% endfor %}
+        
+        <div class="text-end mb-3">
+            <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="fa-solid fa-filter"></i> Filter
+            </button>
+        </div>
     </div>
-
+    <!-- This div will be targeted for updating the filtered results -->
+    <div id="filteredResults">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Main Image</th>
+                    <th>Depart Location</th>
+                    <th>Price</th>
+                    <th>Destination Location</th>
+                    <th>Arrival Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr class="results" onclick="handleClick(event, {{ item.id }})">
+                    <td><img src="{{ item.main_image_url }}" class="main-image" alt="Main Image" onclick="event.stopPropagation(); showModal({{ item.image_urls | safe }});"></td>
+                    <td>{{ item.depart_location }}</td>
+                    <td>{{ item.fair_cost }}</td>
+                    <td>{{ item.destination_location }}</td>
+                    <td>{{ item.destination_time }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     <!-- Pagination Controls -->
     <nav aria-label="Page navigation">
-        <ul class="pagination">
+        <ul class="pagination justify-content-center">
             {% if page > 1 %}
                 <li class="page-item">
                     <a class="page-link" href="{{ url_for('bookings.listings', page=page - 1) }}" aria-label="Previous">
@@ -124,9 +97,10 @@
         </div>
     </div>
 </div>
-<!-- Hidden Filter Modal -->
+
+<!-- Filter Modal -->
 <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="filterModalLabel"><i class="fa-solid fa-filter"></i> Filter Options</h5>
@@ -134,15 +108,13 @@
             </div>
             <div class="modal-body">
                 <form id="filter-form">
-                    <div class="form-group">
+                    <div class="mb-3">
                         <label for="depart_location" class="form-label">Depart Location:</label>
-                        <select class="form-control select2-multiple" id="depart_location" name="depart_location[]" multiple="multiple">
-                        </select>
+                        <select class="form-control select2-multiple" id="depart_location" name="depart_location[]" multiple="multiple"></select>
                     </div>
-                    <div class="form-group">
+                    <div class="mb-3">
                         <label for="destination_location" class="form-label">Destination Location:</label>
-                        <select class="form-control select2-multiple" id="destination_location" name="destination_location[]" multiple="multiple">
-                        </select>
+                        <select class="form-control select2-multiple" id="destination_location" name="destination_location[]" multiple="multiple"></select>
                     </div>
                     <div class="form-group">
                         <label for="min_fair_cost" class="form-label">Minimum Fair Cost:</label>
@@ -155,7 +127,7 @@
                     <div class="form-group">
                         <label for="transport_type" class="form-label">Transport Type:</label>
                         <input type="text" class="form-control" id="transport_type" name="transport_type" value="Airplane" disabled>
-                    </div>                        
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -169,6 +141,53 @@
     </div>
 </div>
 
+<style>
+    @media (max-width: 768px) {
+        #dateContainer {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        #dateContainer .form-label,
+        #dateContainer .form-control,
+        #dateContainer .btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    }
+    
+    .results {
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+    
+    .results:hover {
+        transform: scale(1.05);
+    }
+    
+    .main-image {
+        max-width: 150px;
+        height: auto;
+    }
+    
+    .modal-footer {
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .datepicker {
+        position: relative;
+    }
+    
+    .datepicker .input-group-append {
+        cursor: pointer;
+    }
+    
+    .results-container {
+        width: 90%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    </style>
 <script>
     $(document).ready(function () {
         $('.select2-multiple').select2({
@@ -177,64 +196,79 @@
             width: '100%'
         });
 
-
         const locations = JSON.parse('{{ locations|tojson|safe }}');
         locations.forEach(location => {
             $('#depart_location').append(new Option(location, location));
             $('#destination_location').append(new Option(location, location));
         });
 
+        $('#datetimepicker1').datetimepicker({
+            format: 'DD-MM-YYYY'
+        });
 
-        // Apply filters from the modal
-        $('#apply-filters').click(function () {
+        // Set default date to today and prevent selecting past dates
+        document.getElementById('departDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('departDate').setAttribute('min', new Date().toISOString().split('T')[0]);
+
+        // Common method to apply filters
+        function applyFilters() {
             const filterData = $('#filter-form').serializeArray().reduce((acc, field) => {
                 acc[field.name] = field.value;
                 return acc;
             }, {});
 
-            //Get bookings which match the filter results user inputs
+            // Convert multi-select to proper array format
+            filterData.depart_location = $('#depart_location').val();
+            filterData.destination_location = $('#destination_location').val();
+
+            const selectedDate = $('#departDate').val();
+            filterData.date = selectedDate;
+
+            // Get the current page number from the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentPage = urlParams.get('page') || 1;
+            filterData.page = currentPage;
+
             $.ajax({
                 url: "{{ url_for('bookings.filter_bookings') }}",
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(filterData),
                 success: function (response) {
-                    $('#resultsContainer').html(response.html);
+                    $('#filteredResults').html(response.html); // Updates filtered results
                     $('#filterModal').modal('hide');
-                    $('.pagination').hide();  // Hide pagination as causes it to reset when changing page
+                    // Hide pagination if filters are applied
+                    if (filterData.depart_location.length > 0 || filterData.destination_location.length > 0 || filterData.min_fair_cost || filterData.max_fair_cost) {
+                        $('.pagination').hide();
+                    } else {
+                        $('.pagination').show();
+                    }
                 },
                 error: function () {
                     alert('Error applying filters. Please try again');
                 }
             });
-        });
+        }
 
-        // Reset filters
+
+        // Event listener for applying filters
+        $('#apply-filters').click(applyFilters);
+
+        // Event listener for resetting filters
         $('#reset-filters').click(function () {
             $('#filter-form')[0].reset(); // Reset filter modal
-            $('.pagination').show();  // Re-show pagination
-
-            $.ajax({
-                url: "{{ url_for('bookings.filter_bookings') }}",
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({}), // Send empty filter data to re-show all listings
-                success: function (response) {
-                    $('#resultsContainer').html(response.html);
-                    $('#filterModal').modal('hide');
-                },
-                error: function () {
-                    alert('Error resetting filters.');
-                }
-            });
+            applyFilters(); // Re-show all listings
         });
 
-        $('.select2-multiple').select2({ 
-            width: 'resolve',
-            placeholder: 'Select an option'
+        // Event listener for date picker change
+        $('#departDate').change(applyFilters);
+
+        // Reset date functionality
+        document.getElementById('resetDate').addEventListener('click', function() {
+            document.getElementById('departDate').value = new Date().toISOString().split('T')[0];
+            applyFilters();
         });
 
-        // Close image modal
         $('#imageModal .btn-close, #imageModal .btn-secondary').on('click', function() {
             $('#imageModal').modal('hide');
         });
@@ -242,8 +276,6 @@
 
     // Shows pop-up with images attached to specific booking
     function showModal(imageUrls) {
-        console.log("showModal called with imageUrls:", imageUrls);
-
         var carouselInner = document.getElementById('carouselInner');
         var carouselIndicators = document.getElementById('carouselIndicators');
         carouselInner.innerHTML = '';
@@ -275,7 +307,18 @@
         imageModal.show();
     }
 
-</script>   
+    // Set date field and attach reset button
+    document.getElementById('resetDate').addEventListener('click', function() {
+        document.getElementById('departDate').value = new Date().toISOString().split('T')[0];
+    });
+
+    // Prevent selecting past dates
+    document.getElementById('departDate').setAttribute('min', new Date().toISOString().split('T')[0]);
+
+    // Set default date to today
+    document.getElementById('departDate').value = new Date().toISOString().split('T')[0];
+</script>
+
 </body>
 </html>
 {% endblock %}

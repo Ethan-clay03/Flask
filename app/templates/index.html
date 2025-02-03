@@ -11,8 +11,6 @@
             width: 100%;
         }
     </style>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" defer></script>
 </head>
 <div class="container mt-4">
     <form id="travelForm" class="row g-3">
@@ -50,36 +48,11 @@
                 <option value="firstClass">First Class</option>
             </select>
         </div>
-        <div class="col-md-6">
-            <label for="tripType" class="form-label">Trip Type:</label>
-            <select id="tripType" class="form-select" name="tripType" onchange="toggleReturnFields()">
-                <option value="oneWay">One-way</option>
-                <option value="return">Return</option>
-            </select>
-        </div>
-        <div class="col-md-6">
-            <label for="returnDate" class="form-label">Return Date:</label>
-            <input type="date" class="form-control" id="returnDate" name="returnDate" disabled>
-        </div>
-        <div class="col-12">
+        <div class="col-md-6 d-flex align-items-end justify-content-left">
             <button type="submit" class="btn btn-primary">Search</button>
         </div>
-    </form>
-
+    </form>    
     <script>
-        function toggleReturnFields() {
-            var tripType = document.getElementById("tripType").value;
-            var returnDate = document.getElementById("returnDate");
-            var returnTime = document.getElementById("returnTime");
-            if (tripType === "return") {
-                returnDate.disabled = false;
-                returnTime.disabled = false;
-            } else {
-                returnDate.disabled = true;
-                returnTime.disabled = true;
-            }
-        }
-
         $(document).ready(function () {
             $('.select2-multiple').select2({
                 placeholder: "Select locations",

@@ -1,13 +1,26 @@
-{% for item in items %}
-    <div class="results" onclick="handleClick(event, {{ item.id }})">
-        <div>
-            <img src="{{ item.main_image_url }}" alt="Main Image" class="main-image" onclick="event.stopPropagation(); showModal({{ item.image_urls | safe }});">
-        </div>
-        <div>
-            <div class="title">{{ item.depart_location }}</div>
-            <div class="price">{{ item.fair_cost }}</div>
-            <div class="delivery">{{ item.destination_location }}</div>
-            <div>Save up to 10% with multi-buy</div>
-        </div>
-    </div>
-{% endfor %}
+<div id="filteredResults">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Main Image</th>
+                <th>Depart Location</th>
+                <th>Price</th>
+                <th>Destination Location</th>
+                <th>Arrival Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr class="results" onclick="handleClick(event, {{ item.id }})">
+                <td><img src="{{ item.main_image_url }}" class="main-image" alt="Main Image" onclick="event.stopPropagation(); showModal({{ item.image_urls | safe }});"></td>
+                <td>{{ item.depart_location }}</td>
+                <td>{{ item.fair_cost }}</td>
+                <td>{{ item.destination_location }}</td>
+                <td>{{ item.destination_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+</div>

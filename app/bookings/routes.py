@@ -2,6 +2,7 @@ from flask import render_template, redirect, url_for, request, jsonify
 from app.bookings import bp
 from app.models import Listings
 from app import db
+from app.logger import error_logger
 import json
 
 
@@ -38,7 +39,6 @@ def listings():
 def show_listing(id):
     return render_template('bookings/listings.html', id=1)
 
-
 @bp.route('/filter', methods=['POST'])
 def filter_bookings():
     try:
@@ -48,32 +48,46 @@ def filter_bookings():
         destination_location = data.get('destination_location', [])
         min_fair_cost = data.get('min_fair_cost')
         max_fair_cost = data.get('max_fair_cost')
+        page = int(data.get('page', 1))  # Get the page parameter or default to 1
+        per_page = 10  # Define how many items per page
 
         # Construct the query
         query = db.session.query(Listings)
 
         if depart_location:
-            depart_locations = depart_location.split(',')
-            query = query.filter(Listings.depart_location.in_(depart_locations))
+            query = query.filter(Listings.depart_location.in_(depart_location))
         if destination_location:
-            destination_locations = destination_location.split(',')
-            query = query.filter(Listings.destination_location.in_(destination_locations))
+            query = query.filter(Listings.destination_location.in_(destination_location))
         if min_fair_cost:
             query = query.filter(Listings.fair_cost >= float(min_fair_cost))
         if max_fair_cost:
             query = query.filter(Listings.fair_cost <= float(max_fair_cost))
 
         filtered_items = query.all()
+        total_items = len(filtered_items)
+
+        # Ignore pagination if any filters are applied
+        if depart_location or destination_location or min_fair_cost or max_fair_cost:
+            paginated_items = filtered_items  # Ignore pagination
+            page = 1  # Reset page to 1
+            total_pages = 1  # Only one page of results
+        else:
+            # Paginate the results
+            paginated_items = filtered_items[(page - 1) * per_page: page * per_page]
+            total_pages = (total_items + per_page - 1) // per_page
 
         # Process images
-        process_images(filtered_items)
+        process_images(paginated_items)
 
         # Render only the relevant portion of the results
-        results_html = render_template('_results.html', items=filtered_items)
+        results_html = render_template('_results.html', items=paginated_items, page=page, total_pages=total_pages)
         return jsonify({'html': results_html})
 
     except Exception as e:
+        error_logger.debug(e)
         return jsonify({'error': str(e)}), 400
+
+
 
 def process_images(listings):
     for item in listings:
@@ -86,3 +100,4 @@ def process_images(listings):
             item.main_image_url = url_for('main.upload_file', filename='booking_image_not_found.jpg')
         # Must be a single quote JSON otherwise doesn't work in frontend
         item.image_urls = json.dumps([url_for('main.upload_file', filename=img.image_location) for img in item.listing_images]).replace('"', '&quot;')
+

@@ -65,3 +65,4 @@ class Listings(db.Model):
             return False
     
         return cls.query.get(listing_id)
+

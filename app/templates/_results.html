@@ -1,10 +1,15 @@
 <div id="filteredResults">
+    {% if discount > 0 %}
+    <div class="alert alert-success table" role="alert" style="width:90%;">
+        Special Offer! Get {{ discount }}% off on your booking as you are booking {{days_away}} days away!
+    </div>
+    {% endif %}
     <table class="table table-hover">
         <thead>
             <tr>
                 <th>Main Image</th>
                 <th>Depart Location</th>
-                <th>Price</th>
+                <th>Price (&pound;)</th>
                 <th>Destination Location</th>
                 <th>Arrival Time</th>
             </tr>
@@ -14,13 +19,18 @@
             <tr class="results" onclick="handleClick(event, {{ item.id }})">
                 <td><img src="{{ item.main_image_url }}" class="main-image" alt="Main Image" onclick="event.stopPropagation(); showModal({{ item.image_urls | safe }});"></td>
                 <td>{{ item.depart_location }}</td>
-                <td>{{ item.fair_cost }}</td>
+                <td>
+                    {% if discount > 0 %}
+                    <span style="text-decoration: line-through;">&pound; {{ item.fair_cost }}</span>
+                    <span>&pound; {{ item.fair_cost * (1 - discount / 100) }}</span>
+                    {% else %}
+                    &pound; {{ item.fair_cost }}
+                    {% endif %}
+                </td>
                 <td>{{ item.destination_location }}</td>
                 <td>{{ item.destination_time }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-
-
 </div>

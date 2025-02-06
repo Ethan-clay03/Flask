@@ -3,43 +3,23 @@
 <div class="my_container my-4">
     <div class="results-container">
         <div class="col-md-6 text-start mb-3 d-flex align-items-center flex-md-nowrap flex-wrap" id="dateContainer">
-            <label for="departureDate" class="form-label me-2">Departure Date:</label>
-            <input type="date" class="form-control me-2 flex-grow-1" id="departDate" name="departDate" required>
-            <button type="button" class="btn btn-warning" id="resetDate">
+            <label class="form-label me-2">Departure Date:</label>
+            <div class="col-md-6">
+                <input type="date" class="form-control" id="departDate" name="departDate" required>
+            </div>
+            <button type="button" class="btn btn-warning ms-2" id="resetDate">
                 <i class="fa-solid fa-rotate-right"></i> Reset Date
             </button>
         </div>
-        
         <div class="text-end mb-3">
             <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#filterModal">
                 <i class="fa-solid fa-filter"></i> Filter
             </button>
         </div>
-    </div>
+    </div>      
     <!-- This div will be targeted for updating the filtered results -->
     <div id="filteredResults">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Main Image</th>
-                    <th>Depart Location</th>
-                    <th>Price</th>
-                    <th>Destination Location</th>
-                    <th>Arrival Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in items %}
-                <tr class="results" onclick="handleClick(event, {{ item.id }})">
-                    <td><img src="{{ item.main_image_url }}" class="main-image" alt="Main Image" onclick="event.stopPropagation(); showModal({{ item.image_urls | safe }});"></td>
-                    <td>{{ item.depart_location }}</td>
-                    <td>{{ item.fair_cost }}</td>
-                    <td>{{ item.destination_location }}</td>
-                    <td>{{ item.destination_time }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        {% include '_results.html' %}
     </div>
     <!-- Pagination Controls -->
     <nav aria-label="Page navigation">
@@ -142,52 +122,33 @@
 </div>
 
 <style>
-    @media (max-width: 768px) {
-        #dateContainer {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        #dateContainer .form-label,
-        #dateContainer .form-control,
-        #dateContainer .btn {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-    }
-    
-    .results {
-        cursor: pointer;
-        transition: transform 0.3s;
-    }
-    
-    .results:hover {
-        transform: scale(1.05);
-    }
-    
-    .main-image {
-        max-width: 150px;
-        height: auto;
-    }
-    
-    .modal-footer {
-        display: flex;
-        justify-content: space-between;
-    }
-    
-    .datepicker {
-        position: relative;
-    }
-    
-    .datepicker .input-group-append {
-        cursor: pointer;
-    }
-    
-    .results-container {
-        width: 90%;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    </style>
+.results {
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.results:hover {
+    transform: scale(1.05);
+}
+
+.main-image {
+    max-width: 150px;
+    height: auto;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+}
+
+.table,
+.results-container {
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+</style>
 <script>
     $(document).ready(function () {
         $('.select2-multiple').select2({
@@ -202,13 +163,37 @@
             $('#destination_location').append(new Option(location, location));
         });
 
-        $('#datetimepicker1').datetimepicker({
-            format: 'DD-MM-YYYY'
+        const departDateInput = document.getElementById('departDate');
+        const resetDateButton = document.getElementById('resetDate');
+
+        // Open date picker when the date field is clicked
+        departDateInput.addEventListener('focus', (event) => {
+            event.preventDefault();
+            departDateInput.showPicker();
+        });
+
+        // Prevent any dates being changed by the user manually typing
+        departDateInput.addEventListener('keydown', (event) => {
+            event.preventDefault();
         });
 
         // Set default date to today and prevent selecting past dates
-        document.getElementById('departDate').value = new Date().toISOString().split('T')[0];
-        document.getElementById('departDate').setAttribute('min', new Date().toISOString().split('T')[0]);
+        const today = new Date().toISOString().split('T')[0];
+        departDateInput.value = today;
+        departDateInput.setAttribute('min', today);
+
+        // Set max date to 90 days from today
+        let maxDate = new Date();
+        maxDate.setDate(maxDate.getDate() + 90);
+        departDateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
+
+        // Reset date to today when the reset button is clicked
+        resetDateButton.addEventListener('click', () => {
+            departDateInput.value = today;
+        });
+
+        // Event listener for date picker change
+        $('#departDate').change(applyFilters);
 
         // Common method to apply filters
         function applyFilters() {
@@ -221,6 +206,7 @@
             filterData.depart_location = $('#depart_location').val();
             filterData.destination_location = $('#destination_location').val();
 
+            //Get depart date from departure date field and inject into filtered data
             const selectedDate = $('#departDate').val();
             filterData.date = selectedDate;
 
@@ -260,19 +246,27 @@
             applyFilters(); // Re-show all listings
         });
 
-        // Event listener for date picker change
-        $('#departDate').change(applyFilters);
-
-        // Reset date functionality
-        document.getElementById('resetDate').addEventListener('click', function() {
-            document.getElementById('departDate').value = new Date().toISOString().split('T')[0];
-            applyFilters();
-        });
-
         $('#imageModal .btn-close, #imageModal .btn-secondary').on('click', function() {
             $('#imageModal').modal('hide');
         });
     });
+
+    // Function to validate the selected date
+    function validateDate() {
+        const departDate = document.getElementById('departDate');
+        const today = new Date().toISOString().split('T')[0];
+        const maxDate = new Date();
+        maxDate.setDate(maxDate.getDate() + 90);
+        const selectedDate = new Date(departDate.value);
+
+        // Check if the selected date is within 90 days in the future AND not in the past
+        if (selectedDate < new Date(today) || selectedDate > maxDate) {
+            alert('Please select a date within 90 days from today.');
+            departDate.value = maxDate.toISOString().split('T')[0];
+            return false;
+        }
+        return true; 
+    }
 
     // Shows pop-up with images attached to specific booking
     function showModal(imageUrls) {
@@ -306,17 +300,6 @@
         var imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
         imageModal.show();
     }
-
-    // Set date field and attach reset button
-    document.getElementById('resetDate').addEventListener('click', function() {
-        document.getElementById('departDate').value = new Date().toISOString().split('T')[0];
-    });
-
-    // Prevent selecting past dates
-    document.getElementById('departDate').setAttribute('min', new Date().toISOString().split('T')[0]);
-
-    // Set default date to today
-    document.getElementById('departDate').value = new Date().toISOString().split('T')[0];
 </script>
 
 </body>

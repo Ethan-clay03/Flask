@@ -13,11 +13,12 @@
     </style>
 </head>
 <div class="container mt-4">
-    <form id="travelForm" class="row g-3">
+    <form id="travelForm" class="row g-3" action="{{ url_for('bookings.listings') }}" method="GET">
         <div class="col-md-6">
             <label for="departLocation" class="form-label">Departure Location:</label>
-            <select class="form-select select2-multiple" id="departLocation" name="departLocation" required>
+            <select class="form-select select2-multiple" id="departLocation" name="departLocation">
                 <option value="" disabled selected>Select locations</option>
+                <!-- Populate options dynamically if needed -->
             </select>
         </div>
         <div class="col-md-6">
@@ -26,8 +27,9 @@
         </div>
         <div class="col-md-6">
             <label for="destinationLocation" class="form-label">Destination Location:</label>
-            <select class="form-select select2-multiple" id="destinationLocation" name="destinationLocation" required>
+            <select class="form-select select2-multiple" id="destinationLocation" name="destinationLocation">
                 <option value="" disabled selected>Select locations</option>
+                <!-- Populate options dynamically if needed -->
             </select>
         </div>
         <div class="col-md-6">
@@ -51,7 +53,7 @@
         <div class="col-md-6 d-flex align-items-end justify-content-left">
             <button type="submit" class="btn btn-primary">Search</button>
         </div>
-    </form>    
+    </form>
     <script>
         $(document).ready(function () {
             $('.select2-multiple').select2({
@@ -59,12 +61,36 @@
                 width: '100%'
             });
 
-            const locations = ['USA', 'Budapest', 'Location3', 'Location3', 'Location3'].sort();
+            const locations = JSON.parse('{{ locations|tojson|safe }}');
             locations.forEach(location => {
                 $('#departLocation').append(new Option(location, location));
                 $('#destinationLocation').append(new Option(location, location));
             });
         });
+
+        const departDateInput = document.getElementById('departDate');
+        const resetDateButton = document.getElementById('resetDate');
+
+        // Open date picker when the date field is clicked
+        departDateInput.addEventListener('focus', (event) => {
+            event.preventDefault();
+            departDateInput.showPicker();
+        });
+
+        // Prevent any dates being changed by the user manually typing
+        departDateInput.addEventListener('keydown', (event) => {
+            event.preventDefault();
+        });
+
+        // Set default date to today and prevent selecting past dates
+        const today = new Date().toISOString().split('T')[0];
+        departDateInput.value = today;
+        departDateInput.setAttribute('min', today);
+
+        // Set max date to 90 days from today
+        let maxDate = new Date();
+        maxDate.setDate(maxDate.getDate() + 90);
+        departDateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
     </script>
 </div>
 <div>

@@ -2,6 +2,7 @@
 
 from flask import current_app
 from datetime import time, datetime
+from datetime import datetime 
 
 def allowed_image_files(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
@@ -28,3 +29,16 @@ def calculate_discount(date):
         return 10, days_away
     else:
         return 0, days_away
+    
+
+def pretty_time(unformatted_time, to_12_hour=True):
+    if not isinstance(unformatted_time, (datetime, time)):
+        unformatted_time = datetime.strptime(unformatted_time, "%H:%M:%S")
+    
+    # Format the time
+    if to_12_hour:
+        formatted_time = unformatted_time.strftime("%I:%M %p")
+    else:
+        formatted_time = unformatted_time.strftime("%H:%M")
+    
+    return formatted_time

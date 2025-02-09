@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div id="discountBanner" class="alert alert-success table" role="alert" style="width:90%; display: none;">
+        Special Offer! Get <span id="discountPercent"></span>% off on your booking as you are booking <span id="daysAway"></span> days away!
+    </div>
+    <div class="date-container">
+        <div class="col-md-6 text-start mb-3 d-flex align-items-center flex-md-nowrap flex-wrap" id="dateContainer">
+            <label class="form-label me-2">Departure Date:</label>
+            <div class="col-md-6">
+                <input type="date" class="form-control" id="departDate" name="departDate" required>
+            </div>
+            <button type="button" class="btn btn-warning ms-2" id="resetDate">
+                <i class="fa-solid fa-rotate-right"></i> Reset Date
+            </button>
+        </div>
+        <div class="text-end mb-3">
+            <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="fa-solid fa-filter"></i> Filter
+            </button>
+        </div>
+    </div>      
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="card-title">Departure Information</h2>
+                    <p><strong>Location:</strong> {{ listing.depart_location }}</p>
+                    <p><strong>Time:</strong> {{ listing.depart_time }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="card-title">Destination Information</h2>
+                    <p><strong>Location:</strong> {{ listing.destination_location }}</p>
+                    <p><strong>Time:</strong> {{ listing.destination_time }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="card-title">Transport Information</h2>
+            <p><strong>Transport Type:</strong> {{ listing.transport_type }}</p>
+            <p><strong>Price:</strong> £{{ listing.FairCost }}</p>
+        </div>
+    </div>
+    <div class="text-center">
+        <button class="btn btn-secondary btn-lg" id="bookButton" {% if not current_user.is_authenticated %}disabled{% endif %}>
+            Book Now
+        </button>
+        {% if not current_user.is_authenticated %}
+            <div class="alert alert-warning mt-3" role="alert">
+                You must have an account in order to book.
+                <div class="mt-2">
+                    <a href="{{ url_for('profile.login_book_cache') }}" class="btn btn-primary me-2">Login</a>
+                    <a href="{{ url_for('profile.signup_book_cache') }}" class="btn btn-warning">Sign Up</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    
+</div>
+<script>
+    $(document).ready(function () {
+        const filterDataDepartDate = "{{ filter_data.date if filter_data else '' }}";
+        const resetDateButton = document.getElementById('resetDate');
+
+        const today = new Date().toISOString().split('T')[0];
+        const departDateInput = document.getElementById('departDate');
+
+        if (!filterDataDepartDate) {
+            departDateInput.value = today;
+        } else {
+            departDateInput.value = filterDataDepartDate;
+        }
+
+
+        departDateInput.setAttribute('min', today);
+        let maxDate = new Date();
+        maxDate.setDate(maxDate.getDate() + 90);
+        departDateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
+
+        // Reset date to today when the reset button is clicked
+        resetDateButton.addEventListener('click', () => {
+            departDateInput.value = today;
+        });
+
+        // Open date picker when the date field is clicked
+        departDateInput.addEventListener('focus', (event) => {
+            event.preventDefault();
+            departDateInput.showPicker();
+        });
+
+        // Prevent any dates being changed by the user manually typing
+        departDateInput.addEventListener('keydown', (event) => {
+            event.preventDefault();
+        });
+
+        // Send the updated date to the server to check for discounts
+        departDateInput.addEventListener('change', (event) => {
+            const newDate = event.target.value;
+            fetch('/bookings/check_date', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ date: newDate })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.discount) {
+                    const discountBanner = document.getElementById('discountBanner');
+                    const discountPercent = document.getElementById('discountPercent');
+                    const daysAway = document.getElementById('daysAway');
+
+                    discountPercent.textContent = data.discount;
+                    daysAway.textContent = data.days_away;
+
+                    discountBanner.style.display = 'block';
+                } else {
+                    const discountBanner = document.getElementById('discountBanner');
+                    discountBanner.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+});
+</script>
+{% endblock %}

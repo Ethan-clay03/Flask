@@ -1,11 +1,10 @@
-from flask import render_template, redirect, url_for, request, jsonify
+from flask import render_template, redirect, url_for, request, jsonify, session
 from app.bookings import bp
 from app.models import Listings
 from app import db
 from app.logger import error_logger
-from app.main.utils import calculate_discount
+from app.main.utils import calculate_discount, pretty_time
 import json
-import datetime
 
 
 @bp.route('/')
@@ -55,9 +54,21 @@ def listings():
     )
 
 
-@bp.route('/listing/<int:id>')
-def show_listing(id):
-    return render_template('bookings/listings.html', id=1)
+@bp.route('/show_listing/<int:id>', methods=['GET'])
+def show_listing_dirty(id):
+    # Retrieve query parameters
+    session['filter_data'] = request.args.to_dict()
+
+    return redirect(url_for('bookings.listing', id=id))
+
+# This route should be used after show_listing if used internally as this clears the ajax parameters before redirecting the user
+@bp.route('/listing/<int:id>', methods=['GET'])
+def listing(id):
+    listing = Listings.search_listing(id)
+    listing.depart_time = pretty_time(listing.depart_time)
+    listing.destination_time = pretty_time(listing.destination_time)
+    filter_data = session.pop('filter_data', None)
+    return render_template('bookings/listing.html', listing=listing, filter_data=filter_data)
 
 @bp.route('/filter_bookings', methods=['POST'])
 def filter_bookings():

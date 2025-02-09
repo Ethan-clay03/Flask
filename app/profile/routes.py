@@ -8,6 +8,11 @@ from app.models import User
 from app.logger import auth_logger
 from app import db
 
+@bp.route('/signup/booking/on_hold')
+def signup_book_cache():
+    session['booking_cache'] = 
+
+
 @bp.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':

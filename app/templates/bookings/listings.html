@@ -17,7 +17,7 @@
             </button>
         </div>
     </div>      
-    <!-- This div will be targeted for updating the filtered results -->
+    <!-- Div is dynamically changed through the /filters route -->
     <div id="filteredResults">
         {% include '_results.html' %}
     </div>
@@ -195,47 +195,6 @@
         // Event listener for date picker change
         $('#departDate').change(applyFilters);
 
-        // Common method to apply filters
-        function applyFilters() {
-            const filterData = $('#filter-form').serializeArray().reduce((acc, field) => {
-                acc[field.name] = field.value;
-                return acc;
-            }, {});
-
-            // Convert multi-select to proper array format
-            filterData.depart_location = $('#depart_location').val();
-            filterData.destination_location = $('#destination_location').val();
-
-            //Get depart date from departure date field and inject into filtered data
-            const selectedDate = $('#departDate').val();
-            filterData.date = selectedDate;
-
-            // Get the current page number from the URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const currentPage = urlParams.get('page') || 1;
-            filterData.page = currentPage;
-
-            $.ajax({
-                url: "{{ url_for('bookings.filter_bookings') }}",
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(filterData),
-                success: function (response) {
-                    $('#filteredResults').html(response.html); // Updates filtered results
-                    $('#filterModal').modal('hide');
-                    // Hide pagination if filters are applied
-                    if (filterData.depart_location.length > 0 || filterData.destination_location.length > 0 || filterData.min_fair_cost || filterData.max_fair_cost) {
-                        $('.pagination').hide();
-                    } else {
-                        $('.pagination').show();
-                    }
-                },
-                error: function () {
-                    alert('Error applying filters. Please try again');
-                }
-            });
-        }
-
 
         // Event listener for applying filters
         $('#apply-filters').click(applyFilters);
@@ -251,21 +210,68 @@
         });
     });
 
-    // Function to validate the selected date
-    function validateDate() {
-        const departDate = document.getElementById('departDate');
-        const today = new Date().toISOString().split('T')[0];
-        const maxDate = new Date();
-        maxDate.setDate(maxDate.getDate() + 90);
-        const selectedDate = new Date(departDate.value);
+    function handleClick(event, id) {
+    if (!event.target.classList.contains('main-image')) {
+        const filterData = getFilterData();
 
-        // Check if the selected date is within 90 days in the future AND not in the past
-        if (selectedDate < new Date(today) || selectedDate > maxDate) {
-            alert('Please select a date within 90 days from today.');
-            departDate.value = maxDate.toISOString().split('T')[0];
-            return false;
-        }
-        return true; 
+        // Convert filterData to a URL-encoded query string
+        const queryString = Object.keys(filterData).map(key => {
+            return encodeURIComponent(key) + '=' + encodeURIComponent(filterData[key]);
+        }).join('&');
+
+        // Construct the target URL with the query string
+        const targetUrl = "/bookings/show_listing/" + id + "?" + queryString;
+
+        // Redirect to the target URL with the query string
+        window.location.href = targetUrl;
+    }
+}
+
+
+    function getFilterData() {
+        const filterData = $('#filter-form').serializeArray().reduce((acc, field) => {
+            acc[field.name] = field.value;
+            return acc;
+        }, {});
+
+        // Convert multi-select to proper array format
+        filterData.depart_location = $('#depart_location').val();
+        filterData.destination_location = $('#destination_location').val();
+
+        //Get depart date from departure date field and inject into filtered data
+        const selectedDate = $('#departDate').val();
+        filterData.date = selectedDate;
+
+        return filterData;
+    }
+
+    function applyFilters() {
+        filterData = getFilterData();
+
+        // Get the current page number from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentPage = urlParams.get('page') || 1;
+        filterData.page = currentPage;
+
+        $.ajax({
+            url: "{{ url_for('bookings.filter_bookings') }}",
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(filterData),
+            success: function (response) {
+                $('#filteredResults').html(response.html); // Updates filtered results
+                $('#filterModal').modal('hide');
+                // Hide pagination if filters are applied
+                if (filterData.depart_location.length > 0 || filterData.destination_location.length > 0 || filterData.min_fair_cost || filterData.max_fair_cost) {
+                    $('.pagination').hide();
+                } else {
+                    $('.pagination').show();
+                }
+            },
+            error: function () {
+                alert('Error applying filters. Please try again');
+            }
+        });
     }
 
     // Shows pop-up with images attached to specific booking

@@ -14,12 +14,21 @@
                 <i class="fa-solid fa-rotate-right"></i> Reset Date
             </button>
         </div>
-        <div class="text-end mb-3">
-            <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#filterModal">
-                <i class="fa-solid fa-filter"></i> Filter
-            </button>
+
+        <div class="col-md-6 text-start mb-3 d-flex align-items-center flex-md-nowrap flex-wrap">
+            <label class="form-label me-2">Number of Seats:</label>
+            <div class="col-md-6">
+                <select class="form-select" id="numSeats" name="numSeats">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
         </div>
     </div>
+    <h2 class="mb-4" style="text-align: center; margin-top: 40px;">Booking Details</h2>
     <div class="row">
         <div class="col-md-6">
             <div class="card mb-4">
@@ -50,6 +59,15 @@
             </p>
         </div>
     </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="card-title">Total Cost</h2>
+            <p><strong>Cost Per Person:</strong> {{ listing.transport_type }}</p>
+            <p><strong>Total Cost:</strong> £<span id="totalCost">{{ listing.fair_cost }}</span></p>
+            <p><strong>Total Saved:</strong> £<span id="totalSaved">0.00</span></p>
+
+        </div>
+    </div>
     <div class="text-center">
         <button class="btn btn-secondary btn-lg" id="bookButton" {% if not current_user.is_authenticated %}disabled{% endif %}>
             Book Now
@@ -71,6 +89,7 @@ $(document).ready(function () {
     const resetDateButton = document.getElementById('resetDate');
     const today = new Date().toISOString().split('T')[0];
     const departDateInput = document.getElementById('departDate');
+    const numSeatsInput = document.getElementById('numSeats');
 
     if (!filterDataDepartDate) {
         departDateInput.value = today;
@@ -94,15 +113,16 @@ $(document).ready(function () {
         event.preventDefault();
     });
 
-    // Send the updated date to the server to check for discounts
-    departDateInput.addEventListener('change', (event) => {
-        const newDate = event.target.value;
+    // Send the updated date and number of seats to the server to check for discounts and calculate total cost
+    function updateData() {
+        const newDate = departDateInput.value;
+        const numSeats = numSeatsInput.value;
 
         $.ajax({
             url: "{{ url_for('bookings.listing_apply_update') }}",
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ date: newDate }),
+            data: JSON.stringify({ date: newDate, seats: numSeats }),
             success: function (data) {
                 const discountBanner = document.getElementById('discountBanner');
                 const originalPrice = document.getElementById('originalPrice');
@@ -110,15 +130,19 @@ $(document).ready(function () {
                 const discountedPriceValue = document.getElementById('discountedPriceValue');
                 const discountPercent = document.getElementById('discountPercent');
                 const daysAway = document.getElementById('daysAway');
+                const totalCost = document.getElementById('totalCost');
+                const totalSaved = document.getElementById('totalSaved');
 
+                const originalPriceValue = parseFloat(originalPrice.textContent.replace('£', ''));
+                let discountValue = originalPriceValue;
+                let finalPrice = originalPriceValue;
+
+                // Run calculations on front end, they match backend and simply are for show. This controls the banner at the top for discounts
                 if (data.discount) {
-                    const originalPriceValue = parseFloat(originalPrice.textContent.replace('£', ''));
-                    const discountValue = originalPriceValue * (1 - data.discount / 100);
-
+                    discountValue = originalPriceValue * (1 - data.discount / 100);
                     originalPrice.style.textDecoration = 'line-through';
                     discountedPriceValue.textContent = `${discountValue.toFixed(2)}`;
                     discountedPrice.style.display = 'block';
-
                     discountBanner.style.display = 'block';
                     discountPercent.textContent = data.discount;
                     daysAway.textContent = data.days_away;
@@ -127,17 +151,35 @@ $(document).ready(function () {
                     discountedPrice.style.display = 'none';
                     discountBanner.style.display = 'none';
                 }
+
+                // Update total cost div
+                finalPrice = discountValue * numSeats;
+                totalCost.textContent = `${finalPrice.toFixed(2)}`;
+                totalSaved.textContent = `${(originalPriceValue * numSeats - finalPrice).toFixed(2)}`;
             },
             error: function () {
                 alert('Error applying discount. Please try again.');
             }
         });
-    });
+    }
+
+    departDateInput.addEventListener('change', updateData);
+    numSeatsInput.addEventListener('change', updateData);
 
     // Trigger the change event to apply the initial discount if a date is selected
     if (filterDataDepartDate) {
-        departDateInput.dispatchEvent(new Event('change'));
+        updateData();
     }
+
+    // Handle "Book Now" button click
+    bookButton.addEventListener('click', () => {
+        const departDate = departDateInput.value;
+        const numSeats = numSeatsInput.value;
+        const listingId = "{{listing.id}}";
+
+        window.location.href = `{{ url_for('bookings.payment') }}?date=${departDate}&seats=${numSeats}&listing_id=${listingId}`;
+    });
 });
+
 </script>
 {% endblock %}

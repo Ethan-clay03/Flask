@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, request, jsonify, session
+from flask import render_template, redirect, url_for, request, jsonify, session, flash
 from app.bookings import bp
 from app.models import Listings
 from app import db
@@ -56,18 +56,48 @@ def listings():
 @bp.route('/listing/apply_update', methods=['POST'])
 def listing_apply_update(): 
     data = request.get_json()
-    if 'date' not in data:
-        return jsonify({'error': 'Invalid request'}), 400
+    selected_date = data.get('date')
+    discount, days_away = calculate_discount(selected_date)
 
-    depart_date = data['date']
-    try:
-        discount, days_away = calculate_discount(depart_date)
-        return jsonify({'discount': discount, 'days_away': days_away}), 200
+    response = {
+        'discount': discount,
+        'days_away': days_away
+    }
+    return jsonify(response)
 
-    except ValueError:
-        error_logger.error("Invalid date format, the data passed was: " + data)
-        return jsonify({'error': 'Invalid date format'}), 400
+@bp.route('/checkout')
+def checkout(): 
+    if not session['checkout_cache']:
+        flash("Please select a booking", 'error')
+    depart_date = request.args.get('date')
+    num_seats = request.args.get('seats')
+    listing_id = request.args.get('listing_id')
 
+    session['checkout_cache'] = {
+        'depart_date': depart_date,
+        'num_seats': num_seats,
+        'listing_id': listing_id
+    }
+
+    return redirect(url_for('bookings.checkout'))
+
+@bp.route('/payment')
+def payment(): 
+    depart_date = request.args.get('date')
+    num_seats = request.args.get('seats')
+    listing_id = request.args.get('listing_id')
+
+    if not depart_date or not num_seats or not listing_id:
+        flash('Please select a booking in order to checkout.', 'error')
+        return redirect(url_for('bookings.listings'))
+
+    session['checkout_cache'] = {
+        'depart_date': depart_date,
+        'num_seats': num_seats,
+        'listing_id': listing_id
+    }
+
+    return redirect(url_for('bookings.checkout'))
 
 @bp.route('/show_listing/<int:id>', methods=['GET'])
 def show_listing_dirty(id):

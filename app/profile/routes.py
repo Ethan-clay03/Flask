@@ -1,5 +1,5 @@
 #https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login#step-1-installing-packages
-from flask import render_template, redirect, url_for, request, flash, jsonify, session, current_app, abort
+from flask import render_template, redirect, url_for, request, flash, jsonify, session, current_app
 from flask_principal import Identity, identity_changed
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
@@ -8,13 +8,13 @@ from app.models import User
 from app.logger import auth_logger
 from app import db
 
-@bp.route('/signup/booking/on_hold')
-def signup_book_cache():
-    session['booking_cache'] = 
-
-
 @bp.route('/signup', methods=['GET', 'POST'])
 def signup():
+    #If a callback URL has been sent in any request add it to the session, once user signed up it will be handled and return
+    #the user to the previous page they were browsing (does not currently hold a full page cache)
+    if request.args.get('callback'):
+        session['callback'] = request.args.get('callback')
+
     if request.method == 'POST':
         form_data = {
             'email': request.form.get('email'),
@@ -39,6 +39,13 @@ def signup():
             db.session.commit()
 
             login_user(new_user)
+
+            if session['callback']:
+                flash("Account successfully created. Please review your booking before continuing", 'success')
+                callback = session.pop('callback')
+                return redirect(callback)
+            
+            flash('Successfully created your account. You have been logged in automatically', 'success')
             return redirect(url_for('profile.index'))
         except Exception as e:
             auth_logger.error(f"Unable to create user: {e}")
@@ -88,6 +95,11 @@ def login_post():
 
     identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
 
+    if session['callback']:
+                callback = session.pop('callback')
+                flash("You have been successfully logged in. Please review your booking before continuing", 'success')
+                return redirect(callback)
+    
     return redirect(url_for('profile.index'))
 
 
@@ -133,10 +145,13 @@ def logout():
 
 @bp.route('/login')
 def login():
+    #If a callback URL has been sent in any request add it to the session, once user logged in it will be handled and return
+    #the user to the previous page they were browsing (does not currently hold a full page cache)
+    if request.args.get('callback'):
+        session['callback'] = request.args.get('callback')
     if current_user.is_authenticated:
         return redirect(url_for('profile.index'))
 
-    #user not logged in
     return render_template('profile/login.html')
 
 

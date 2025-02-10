@@ -5,6 +5,7 @@ from app import db
 from app.logger import error_logger
 from app.main.utils import calculate_discount, pretty_time
 import json
+from datetime import datetime
 
 
 @bp.route('/')
@@ -69,9 +70,9 @@ def listing_apply_update():
 def checkout(): 
     if not session['checkout_cache']:
         flash("Please select a booking", 'error')
-    depart_date = request.args.get('date')
-    num_seats = request.args.get('seats')
-    listing_id = request.args.get('listing_id')
+    depart_date = session['checkout_cache']['depart_date']
+    num_seats = session['checkout_cache']['num_seats']
+    listing_id = session['checkout_cache']['listing_id']
 
     session['checkout_cache'] = {
         'depart_date': depart_date,
@@ -79,7 +80,15 @@ def checkout():
         'listing_id': listing_id
     }
 
-    return redirect(url_for('bookings.checkout'))
+    listing = Listings.search_listing(listing_id)
+    listing.depart_time = pretty_time(listing.depart_time)
+    listing.destination_time = pretty_time(listing.destination_time)
+    
+    # Parse depart_date as a date object
+    depart_date_obj = datetime.strptime(depart_date, '%Y-%m-%d')
+    depart_date_formatted = depart_date_obj.strftime('%d-%m-%Y')
+
+    return render_template('bookings/checkout.html', listing=listing, num_seats=num_seats, depart_date=depart_date_formatted)
 
 @bp.route('/payment')
 def payment(): 

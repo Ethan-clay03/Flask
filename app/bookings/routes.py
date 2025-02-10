@@ -53,6 +53,21 @@ def listings():
                            }
     )
 
+@bp.route('/listing/apply_update', methods=['POST'])
+def listing_apply_update(): 
+    data = request.get_json()
+    if 'date' not in data:
+        return jsonify({'error': 'Invalid request'}), 400
+
+    depart_date = data['date']
+    try:
+        discount, days_away = calculate_discount(depart_date)
+        return jsonify({'discount': discount, 'days_away': days_away}), 200
+
+    except ValueError:
+        error_logger.error("Invalid date format, the data passed was: " + data)
+        return jsonify({'error': 'Invalid date format'}), 400
+
 
 @bp.route('/show_listing/<int:id>', methods=['GET'])
 def show_listing_dirty(id):
@@ -68,7 +83,12 @@ def listing(id):
     listing.depart_time = pretty_time(listing.depart_time)
     listing.destination_time = pretty_time(listing.destination_time)
     filter_data = session.pop('filter_data', None)
-    return render_template('bookings/listing.html', listing=listing, filter_data=filter_data)
+
+    selected_date = filter_data['date'] if filter_data and 'date' in filter_data else None
+    discount, days_away = calculate_discount(selected_date) if selected_date else (0, 0)
+
+    return render_template('bookings/listing.html', listing=listing, selected_date=selected_date, discount=discount, days_away=days_away)
+
 
 @bp.route('/filter_bookings', methods=['POST'])
 def filter_bookings():

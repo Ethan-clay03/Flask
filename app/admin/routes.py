@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, request, jsonify, flash
 from app import db
 from app import admin_permission, permission_required, super_admin_permission
-from app.models import Listings, ListingImages
+from app.models import Listings, ListingImages, User
 from app.admin import bp
 from app.main.utils import generate_time_options
 
@@ -46,7 +46,7 @@ def edit_booking(id):
 @bp.route('/manage_users')
 @permission_required(super_admin_permission)
 def manage_users():
-    return render_template('admin/index.html')
+    return render_template('admin/manage_users.html')
 
 @bp.route('/manage_user_bookings')
 @permission_required(admin_permission)
@@ -155,6 +155,23 @@ def get_bookings():
     
     return jsonify(result)
 
+
+@bp.route('get_users', methods=['GET'])
+@permission_required(super_admin_permission)
+def get_users():
+    all_users = User.get_all_users()
+
+    result = [
+        {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'role': user.role.name,
+        } for user in all_users
+    ]
+    
+    return jsonify(result)
+
 @bp.route('create_listing', methods=['GET'])
 @permission_required(admin_permission)
 def create_listing():
@@ -224,6 +241,18 @@ def delete_booking():
     http_code = 400
     booking_id = request.form.get('id')
     success = Listings.delete_listing(booking_id)
+
+    if success:
+        http_code = 200
+
+    return jsonify(success), http_code
+
+@bp.route('delete_user', methods=['DELETE'])
+@permission_required(admin_permission)
+def delete_user():
+    http_code = 400
+    user_id = request.form.get('id')
+    success = User.delete_user(user_id)
 
     if success:
         http_code = 200

@@ -56,3 +56,19 @@ class User(UserMixin, db.Model):
         if user and user.role:
             return user.role.name
         return None
+    
+    @classmethod
+    def get_all_users(cls):
+        return cls.query.all()
+    
+    @classmethod
+    def delete_user(cls, user_id = None):
+
+        user =  cls.search_user_id(user_id)
+
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            return True
+        
+        return False

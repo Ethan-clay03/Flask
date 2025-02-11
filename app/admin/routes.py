@@ -42,6 +42,15 @@ def edit_booking(id):
         destination_time_str=destination_time_str
     )
 
+@bp.route('/manage_users/edit/<int:id>')
+@permission_required(super_admin_permission)
+def edit_user(id):
+    user = User.search_user_id(id)
+                                                             
+    return render_template(
+        'admin/edit_user.html', 
+        user=user
+    )
 
 @bp.route('/manage_users')
 @permission_required(super_admin_permission)

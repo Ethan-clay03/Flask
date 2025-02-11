@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 class="card-title">User Information</h2>
+            <p><strong>User Name:</strong> 
+                <span id="userName">{{user.username}}</span> 
+                <button class="btn btn-primary" onclick="editField('userName', this)">Update</button>
+            </p>
+            <p><strong>Email:</strong> 
+                <span id="userEmail">{{user.email}}</span> 
+                <button class="btn btn-primary" onclick="editField('userEmail', this)">Update</button>
+            </p>
+            <p><strong>Role:</strong> 
+                <span id="userRole">{{user.role.name}}</span> 
+                <button class="btn btn-primary" onclick="editField('userRole', this)">Update</button>
+            </p>
+        </div>
+    </div>
+</div>
+<div class="text-center">
+    <button class="btn btn-secondary btn-lg">
+        Save Changes
+    </button>
+</div>
+
+<style>
+    .input-container {
+        display: flex;
+        align-items: center;
+    }
+    .input-container input {
+        flex: 1;
+        max-width: 500px;
+    }
+    .input-container button {
+        margin-left: 10px;
+    }
+</style>
+
+<script>
+function editField(fieldId, button) {
+    const field = document.getElementById(fieldId);
+    const originalValue = field.textContent;
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = originalValue;
+    input.classList.add("form-control");
+    input.autofocus = true;
+
+    const container = document.createElement("div");
+    container.classList.add("input-container");
+    container.appendChild(input);
+
+    field.parentNode.replaceChild(container, field);
+
+    input.onblur = function() {
+        if (!container.contains(input)) return;
+        saveField(input, fieldId, button);
+    };
+
+    button.innerText = 'Apply';
+    button.onclick = function() {
+        saveField(input, fieldId, button);
+    };
+
+    container.appendChild(button);
+}
+
+function saveField(input, fieldId, button) 
+{
+    const newValue = input.value;
+
+    const newSpan = document.createElement("span");
+    newSpan.id = fieldId;
+    newSpan.textContent = newValue;
+
+    const container = input.parentNode;
+    container.parentNode.replaceChild(newSpan, container);
+
+    button.innerText = 'Update';
+    button.onclick = editField.bind(null, fieldId, button);
+
+    newSpan.parentNode.appendChild(button);
+}
+</script>
+{% endblock %}

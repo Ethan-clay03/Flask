@@ -40,9 +40,9 @@ def signup():
 
             login_user(new_user)
 
-            if session['callback']:
-                flash("Account successfully created. Please review your booking before continuing", 'success')
+            if 'callback' in session.keys():
                 callback = session.pop('callback')
+                flash("Account successfully created. Please review your booking before continuing", 'success')
                 return redirect(callback)
             
             flash('Successfully created your account. You have been logged in automatically', 'success')
@@ -74,8 +74,6 @@ def is_valid_username(username):
     return all(c.isalnum() or c in allowed_special_chars for c in username)
 
 
-from flask_principal import Identity, identity_changed
-
 @bp.route('/login', methods=['POST'])
 def login_post():
     username_field = request.form.get('username')
@@ -95,10 +93,10 @@ def login_post():
 
     identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
 
-    if session['callback']:
-                callback = session.pop('callback')
-                flash("You have been successfully logged in. Please review your booking before continuing", 'success')
-                return redirect(callback)
+    if 'callback' in session.keys():
+        callback = session.pop('callback')
+        flash("You have been successfully logged in. Please review your booking before continuing", 'success')
+        return redirect(callback)
     
     return redirect(url_for('profile.index'))
 

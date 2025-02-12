@@ -147,7 +147,6 @@ def register_blueprints(app):
     blueprints = [
         ('main', None),
         ('bookings', '/bookings'),
-        ('api', '/api'),
         ('admin', '/admin'),
         ('profile', '/profile'),
         ('errors', '/errors'),

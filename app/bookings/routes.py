@@ -6,6 +6,7 @@ from app.logger import error_logger
 from app.main.utils import calculate_discount, pretty_time
 import json
 from datetime import datetime
+from app import user_permission, permission_required
 
 
 @bp.route('/')
@@ -84,13 +85,13 @@ def checkout():
     listing.depart_time = pretty_time(listing.depart_time)
     listing.destination_time = pretty_time(listing.destination_time)
     
-    # Parse depart_date as a date object
     depart_date_obj = datetime.strptime(depart_date, '%Y-%m-%d')
     depart_date_formatted = depart_date_obj.strftime('%d-%m-%Y')
 
     return render_template('bookings/checkout.html', listing=listing, num_seats=num_seats, depart_date=depart_date_formatted)
 
 @bp.route('/payment')
+@permission_required(user_permission)
 def payment(): 
     depart_date = request.args.get('date')
     num_seats = request.args.get('seats')
@@ -101,6 +102,7 @@ def payment():
         return redirect(url_for('bookings.listings'))
 
     session['checkout_cache'] = {
+        'listing_id': listing_id,
         'depart_date': depart_date,
         'num_seats': num_seats,
         'listing_id': listing_id

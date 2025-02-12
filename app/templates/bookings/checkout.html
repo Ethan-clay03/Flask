@@ -18,5 +18,97 @@
             </div>
         </div>
     </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="card-title">Payment Information</h2>
+                    <form id="paymentForm">
+                        <div class="form-group">
+                            <label for="cardNumber">Credit Card Number</label>
+                            <input type="text" class="form-control" id="cardNumber" name="cardNumber" placeholder="Enter your credit card number">
+                        </div>
+                        <div class="form-group">
+                            <label for="cardExpiry">Expiry Date</label>
+                            <input type="text" class="form-control" id="cardExpiry" name="cardExpiry" placeholder="MM/YY">
+                        </div>
+                        <div class="form-group">
+                            <label for="cardCVC">CVC</label>
+                            <input type="text" class="form-control" id="cardCVC" name="cardCVC" placeholder="CVC">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="margin-top:10px;">Pay Now</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/pristinejs/dist/pristine.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var form = document.getElementById('paymentForm');
+        var pristine = new Pristine(form);
+
+        pristine.addValidator(
+            document.getElementById('cardNumber'),
+            function (value) {
+                return /^[0-9]{16}$/.test(value); // Check if the card number is 16 digits
+            },
+            "Credit card number must be 16 digits",
+            2,
+            false
+        );
+
+        pristine.addValidator(
+            document.getElementById('cardExpiry'),
+            function (value) {
+                var parts = value.split('/');
+                if (parts.length !== 2) return false;
+                var month = parseInt(parts[0], 10);
+                var year = parseInt(parts[1], 10) + 2000; // Assuming the year is in YY format
+                var expiryDate = new Date(year, month - 1);
+                return expiryDate >= new Date();
+            },
+            "Expiry date cannot be in the past",
+            2,
+            false
+        );
+
+        pristine.addValidator(
+            document.getElementById('cardCVC'),
+            function (value) {
+                return /^[0-9]{3}$/.test(value); // Check if the CVC is 3 digits
+            },
+            "CVC must be 3 digits",
+            2,
+            false
+        );
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var valid = pristine.validate(); // returns true or false
+
+            if (valid) {
+                alert('Payment information is valid!');
+                form.submit();
+            }
+        });
+
+        // Validate on blur (focus lost)
+        var inputs = form.querySelectorAll('input');
+        inputs.forEach(function (input) {
+            input.addEventListener('blur', function () {
+                pristine.validate(input);
+            });
+        });
+
+        // Add CSS to show error messages in red
+        var style = document.createElement('style');
+        style.innerHTML = '.pristine-error { color: red; }';
+        document.head.appendChild(style);
+    });
+</script>
+    
 {% endblock %}

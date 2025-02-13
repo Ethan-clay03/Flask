@@ -24,7 +24,7 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h2 class="card-title">Payment Information</h2>
-                    <form id="paymentForm">
+                    <form id="paymentForm" action="{{ url_for('bookings.checkout_post') }}" method="post">
                         <div class="form-group">
                             <label for="cardNumber">Credit Card Number</label>
                             <input type="text" class="form-control" id="cardNumber" name="cardNumber" placeholder="Enter your credit card number">

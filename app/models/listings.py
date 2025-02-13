@@ -11,7 +11,8 @@ class Listings(db.Model):
     depart_time = db.Column(Time, nullable=False)
     destination_location = db.Column(db.String(255), nullable=False)
     destination_time = db.Column(Time, nullable=False)
-    fair_cost = db.Column(db.Float(), nullable=False) 
+    economy_fair_cost = db.Column(db.Float(), nullable=False) 
+    business_fair_cost = db.Column(db.Float(), nullable=False) 
     transport_type = db.Column(db.String(255), nullable=False)
     listing_images = relationship("ListingImages", back_populates="listing", cascade="all, delete-orphan")
 

@@ -10,11 +10,19 @@
             <div class="col-md-6">
                 <input type="date" class="form-control" id="departDate" name="departDate" required value="{{ selected_date or today }}">
             </div>
+            <div class="col-md-6 text-start mb-3 d-flex align-items-center flex-md-nowrap flex-wrap">
+                <label class="form-label me-2">Seat Type:</label>
+                <div class="col-md-6">
+                    <select class="form-select" id="seatType" name="seatType">
+                        <option value="economy">Economy</option>
+                        <option value="business">Business</option>
+                    </select>
+                </div>
+            </div>
             <button type="button" class="btn btn-warning ms-2" id="resetDate">
                 <i class="fa-solid fa-rotate-right"></i> Reset Date
             </button>
         </div>
-
         <div class="col-md-6 text-start mb-3 d-flex align-items-center flex-md-nowrap flex-wrap">
             <label class="form-label me-2">Number of Seats:</label>
             <div class="col-md-6">
@@ -53,7 +61,7 @@
         <div class="card-body">
             <h2 class="card-title">Transport Information</h2>
             <p><strong>Transport Type:</strong> {{ listing.transport_type }}</p>
-            <p><strong>Price:</strong> £<span id="originalPrice">{{ listing.fair_cost }}</span></p>
+            <p><strong>Price:</strong> £<span id="originalPrice">{{ listing.economy_fair_cost }}</span></p>
             <p id="discountedPrice" style="display: none;">
                 <strong>Discounted Price:</strong> £<span id="discountedPriceValue"></span>
             </p>
@@ -90,6 +98,7 @@ $(document).ready(function () {
     const today = new Date().toISOString().split('T')[0];
     const departDateInput = document.getElementById('departDate');
     const numSeatsInput = document.getElementById('numSeats');
+    const seatTypeInput = document.getElementById('seatType'); // Add this line
 
     if (!filterDataDepartDate) {
         departDateInput.value = today;
@@ -98,6 +107,7 @@ $(document).ready(function () {
     }
 
     departDateInput.setAttribute('min', today);
+
     let maxDate = new Date();
     maxDate.setDate(maxDate.getDate() + 90);
     departDateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
@@ -113,16 +123,17 @@ $(document).ready(function () {
         event.preventDefault();
     });
 
-    // Send the updated date and number of seats to the server to check for discounts and calculate total cost
+    // Send the updated date, number of seats, and seat type to the server to check for discounts and calculate total cost
     function updateData() {
         const newDate = departDateInput.value;
         const numSeats = numSeatsInput.value;
+        const seatType = seatTypeInput.value; // Add this line
 
         $.ajax({
             url: "{{ url_for('bookings.listing_apply_update') }}",
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ date: newDate, seats: numSeats }),
+            data: JSON.stringify({ date: newDate, seats: numSeats, seatType: seatType }), // Update this line
             success: function (data) {
                 const discountBanner = document.getElementById('discountBanner');
                 const originalPrice = document.getElementById('originalPrice');
@@ -132,14 +143,18 @@ $(document).ready(function () {
                 const daysAway = document.getElementById('daysAway');
                 const totalCost = document.getElementById('totalCost');
                 const totalSaved = document.getElementById('totalSaved');
-
                 const originalPriceValue = parseFloat(originalPrice.textContent.replace('£', ''));
+
                 let discountValue = originalPriceValue;
                 let finalPrice = originalPriceValue;
 
-                // Run calculations on front end, they match backend and simply are for show. This controls the banner at the top for discounts
+                // Calculate the cost based on the seat type
+                if (seatType === "business") {
+                    discountValue = originalPriceValue * 2;
+                }
+
                 if (data.discount) {
-                    discountValue = originalPriceValue * (1 - data.discount / 100);
+                    discountValue = discountValue * (1 - data.discount / 100);
                     originalPrice.style.textDecoration = 'line-through';
                     discountedPriceValue.textContent = `${discountValue.toFixed(2)}`;
                     discountedPrice.style.display = 'block';
@@ -165,6 +180,7 @@ $(document).ready(function () {
 
     departDateInput.addEventListener('change', updateData);
     numSeatsInput.addEventListener('change', updateData);
+    seatTypeInput.addEventListener('change', updateData); // Add this line
 
     // Trigger the change event to apply the initial discount if a date is selected
     if (filterDataDepartDate) {
@@ -175,6 +191,7 @@ $(document).ready(function () {
     bookButton.addEventListener('click', () => {
         const departDate = departDateInput.value;
         const numSeats = numSeatsInput.value;
+        const seatType = seatTypeInput.value; // Add this line
         const listingId = "{{listing.id}}";
 
         window.location.href = `{{ url_for('bookings.payment') }}?date=${departDate}&seats=${numSeats}&listing_id=${listingId}`;

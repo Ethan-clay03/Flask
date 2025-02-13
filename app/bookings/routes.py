@@ -49,7 +49,7 @@ def listings():
                            locations=locations,
                            discount=discount,
                            days_away=days_away,
-                           form_data={
+                           form_data= {
                                'departLocation': depart_location,
                                'destinationLocation': destination_location
                            }
@@ -130,6 +130,35 @@ def listing(id):
 
     return render_template('bookings/listing.html', listing=listing, selected_date=selected_date, discount=discount, days_away=days_away)
 
+@bp.route('/checkout_post', methods=['POST'])
+def checkout_post():
+    card_number = request.form['cardNumber']
+    card_expiry = request.form['cardExpiry']
+    card_cvc = request.form['cardCVC']
+    
+    # Validate and process payment (pseudo-code)
+    if not validate_payment(card_number, card_expiry, card_cvc):
+        flash('Payment failed. Please check your card details.')
+        return redirect(url_for('checkout'))  # Redirect to the checkout page on failure
+
+    # Assume that listing_id and user_id are obtained from session or form
+    listing_id = request.form['listing_id']
+    user_id = request.form['user_id']
+    num_seats = int(request.form['num_seats'])
+
+    # Create booking
+    if create_booking(listing_id, user_id, num_seats):
+        # Update availability after successful booking
+        update_listing_availability(listing_id, num_seats)
+        flash('Booking successful!')
+    else:
+        flash('Booking failed. Please try again.')
+    
+    return redirect(url_for('booking_confirmation'))
+
+def validate_payment(card_number, card_expiry, card_cvc):
+    # Implement your payment validation logic here
+    return 
 
 @bp.route('/filter_bookings', methods=['POST'])
 def filter_bookings():

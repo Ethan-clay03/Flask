@@ -45,8 +45,12 @@
             </select>
         </div>
         <div class="col-md-6">
-            <label for="fairCost" class="form-label">Fair Cost:</label>
-            <input type="number" step="0.01" class="form-control" id="fairCost" name="fairCost" value="{{ listing.fair_cost }}" required>
+            <label for="economyFairCost" class="form-label">Economy Fair Cost:</label>
+            <input type="number" step="0.01" class="form-control" id="economyFairCost" name="economyFairCost" value="{{ listing.economy_fair_cost }}" required>
+        </div>
+        <div class="col-md-6">
+            <label for="businessFairCost" class="form-label">Business Fair Cost:</label>
+            <input type="number" step="0.01" class="form-control" id="businessFairCost" name="businessFairCost" value="{{ listing.business_fair_cost }}" required>
         </div>
         <div class="col-md-6">
             <label for="transportType" class="form-label">Transport Type:</label>

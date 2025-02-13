@@ -11,7 +11,7 @@
                 <th>Depart Location</th>
                 <th>Price (&pound;)</th>
                 <th>Destination Location</th>
-                <th>Arrival Time</th>
+                <th>Arrival Time (24 Hour)</th>
             </tr>
         </thead>
         <tbody>
@@ -21,14 +21,14 @@
                 <td>{{ item.depart_location }}</td>
                 <td>
                     {% if discount > 0 %}
-                    <span style="text-decoration: line-through;">&pound; {{ item.fair_cost }}</span>
-                    <span>&pound; {{ item.fair_cost * (1 - discount / 100) }}</span>
+                    <span style="text-decoration: line-through;">&pound; {{ item.original_cost }}</span>
+                    <span>&pound; {{ item.discounted_cost }}</span>
                     {% else %}
-                    &pound; {{ item.fair_cost }}
+                    &pound; {{ item.original_cost }}
                     {% endif %}
                 </td>
                 <td>{{ item.destination_location }}</td>
-                <td>{{ item.destination_time }}</td>
+                <td>{{ item.destination_time.strftime('%H:%M') }}</td>
             </tr>
             {% endfor %}
         </tbody>

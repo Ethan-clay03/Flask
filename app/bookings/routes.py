@@ -13,12 +13,12 @@ from app import user_permission, permission_required
 def redirect_index():
     return redirect(url_for('bookings.index'), code=301)
 
-
 @bp.route('/listings')
 def listings():
     depart_location = request.args.get('departLocation')
     destination_location = request.args.get('destinationLocation')
     depart_date = request.args.get('departDate')
+    seat_type = request.args.get('seatType', 'economy')
 
     page = request.args.get('page', 1, type=int)
     per_page = 10
@@ -33,6 +33,15 @@ def listings():
     if destination_location:
         all_listings = [listing for listing in all_listings if listing.destination_location == destination_location]
 
+    # Calculate total cost and apply discount, also change time to nicer format
+    for listing in all_listings:
+        if seat_type == 'economy':
+            listing.discounted_cost = listing.economy_fair_cost * (1 - discount / 100)
+            listing.original_cost = listing.economy_fair_cost
+        elif seat_type == 'business':
+            listing.discounted_cost = listing.business_fair_cost * (1 - discount / 100)
+            listing.original_cost = listing.business_fair_cost
+
     # Calculate pagination items and how many listings exist
     total_items = len(all_listings)
     paginated_listings = all_listings[(page - 1) * per_page: page * per_page]
@@ -41,19 +50,23 @@ def listings():
 
     # Get all locations for dropdowns
     locations = Listings.get_all_locations(True)
-
-    return render_template('bookings/listings.html',
-                           items=paginated_listings,
-                           page=page,
-                           total_pages=(total_items + per_page - 1) // per_page,
-                           locations=locations,
-                           discount=discount,
-                           days_away=days_away,
-                           form_data= {
-                               'departLocation': depart_location,
-                               'destinationLocation': destination_location
-                           }
+    
+    return render_template(
+        'bookings/listings.html',
+        items=paginated_listings,
+        page=page,
+        total_pages=(total_items + per_page - 1) // per_page,
+        locations=locations,
+        discount=discount,
+        days_away=days_away,
+        depart_date=depart_date,
+        form_data={
+            'departLocation': depart_location,
+            'destinationLocation': destination_location,
+            'seatType': seat_type
+        }
     )
+
 
 @bp.route('/listing/apply_update', methods=['POST'])
 def listing_apply_update(): 
@@ -162,53 +175,53 @@ def validate_payment(card_number, card_expiry, card_cvc):
 
 @bp.route('/filter_bookings', methods=['POST'])
 def filter_bookings():
-    try:
-        # Get filter criteria from the request
-        data = request.get_json()
-        depart_location = data.get('depart_location', [])
-        destination_location = data.get('destination_location', [])
-        min_fair_cost = data.get('min_fair_cost')
-        max_fair_cost = data.get('max_fair_cost')
-        depart_date = data.get('date')
-        page = int(data.get('page', 1))  # Get the page parameter or default to 1
-        per_page = 10  # How many listings show per page
+    # Get filter criteria from the request
+    data = request.get_json()
+    depart_location = data.get('depart_location', [])
+    destination_location = data.get('destination_location', [])
+    depart_date = data.get('date')
+    seat_type = data.get('seatType', 'economy')  # Default to 'economy' if not provided
+    page = int(data.get('page', 1))  # Get the page parameter or default to 1
+    per_page = 10  # How many listings show per page
 
-        discount, days_away = calculate_discount(depart_date)
+    discount, days_away = calculate_discount(depart_date)
 
-        query = db.session.query(Listings)
+    query = db.session.query(Listings)
 
-        if depart_location:
-            query = query.filter(Listings.depart_location.in_(depart_location))
-        if destination_location:
-            query = query.filter(Listings.destination_location.in_(destination_location))
-        if min_fair_cost:
-            query = query.filter(Listings.fair_cost >= float(min_fair_cost))
-        if max_fair_cost:
-            query = query.filter(Listings.fair_cost <= float(max_fair_cost))
+    if depart_location:
+        query = query.filter(Listings.depart_location.in_(depart_location))
+    if destination_location:
+        query = query.filter(Listings.destination_location.in_(destination_location))
 
-        filtered_items = query.all()
-        total_items = len(filtered_items)
+    filtered_items = query.all()
+    total_items = len(filtered_items)
 
-        # Ignore pagination if any filters are applied
-        if depart_location or destination_location or min_fair_cost or max_fair_cost:
-            paginated_items = filtered_items 
-            page = 1 
-            total_pages = 1
-        else:
-            # Paginate the results
-            paginated_items = filtered_items[(page - 1) * per_page: page * per_page]
-            total_pages = (total_items + per_page - 1) // per_page
+    # Ignore pagination if any filters are applied
+    if depart_location or destination_location:
+        paginated_items = filtered_items 
+        page = 1 
+        total_pages = 1
+    else:
+        # Paginate the results
+        paginated_items = filtered_items[(page - 1) * per_page: page * per_page]
+        total_pages = (total_items + per_page - 1) // per_page
 
-        # Process images
-        process_images(paginated_items)
+    # Calculate total cost and apply discount
+    for item in paginated_items:
+        if seat_type == 'economy':
+            item.discounted_cost = item.economy_fair_cost * (1 - discount / 100)
+            item.original_cost = item.economy_fair_cost
+        elif seat_type == 'business':
+            item.discounted_cost = item.business_fair_cost * (1 - discount / 100)
+            item.original_cost = item.business_fair_cost
 
-        # Render only the relevant portion of the results
-        results_html = render_template('_results.html', items=paginated_items, page=page, total_pages=total_pages, discount=discount, days_away=days_away)
-        return jsonify({'html': results_html})
+    # Process images
+    process_images(paginated_items)
 
-    except Exception as e:
-        error_logger.debug(e)
-        return jsonify({'error': str(e)}), 400
+    # Render only the relevant portion of the results
+    results_html = render_template('_results.html', items=paginated_items, page=page, total_pages=total_pages, discount=discount, days_away=days_away, seat_type=seat_type)
+    return jsonify({'html': results_html})
+
 
 
 def process_images(listings):

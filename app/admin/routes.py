@@ -70,7 +70,8 @@ def update_booking(id):
     destination_location = request.form.get('destinationLocation')
     depart_time = request.form.get('departTime')
     destination_time = request.form.get('destinationTime')
-    fair_cost = request.form.get('fairCost')
+    economy_fair_cost = request.form.get('economyFairCost')
+    business_fair_cost = request.form.get('businessFairCost')
     transport_type = request.form.get('transportType')
     images = request.files.getlist('images')
     main_image_id = request.form.get('main_image')
@@ -85,8 +86,10 @@ def update_booking(id):
             listing.depart_time = depart_time
         if destination_time:
             listing.destination_time = destination_time
-        if fair_cost:
-            listing.fair_cost = fair_cost
+        if economy_fair_cost:
+            listing.economy_fair_cost = economy_fair_cost
+        if business_fair_cost:
+            listing.business_fair_cost = business_fair_cost
         if transport_type:
             listing.transport_type = transport_type
 
@@ -157,7 +160,8 @@ def get_bookings():
             'depart_time': listing.depart_time.strftime("%H:%M"),
             'destination_location': listing.destination_location,
             'destination_time': listing.destination_time.strftime("%H:%M"),
-            'fair_cost': listing.fair_cost,
+            'economy_fair_cost': listing.economy_fair_cost,
+            'business_fair_cost': listing.business_fair_cost,
             'transport_type': listing.transport_type
         } for listing in filtered_data
     ]

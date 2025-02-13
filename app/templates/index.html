@@ -40,48 +40,18 @@
                 <option value="5">5</option>
             </select>
         </div>
+        <div class="col-md-6">
+            <label for="seatType" class="form-label">Seat Type:</label>
+            <select class="form-select" id="seatType" name="seatType" required>
+                <option value="" disabled selected>Select seat type</option>
+                <option value="economy">Economy</option>
+                <option value="business">Business</option>
+            </select>
+        </div>
         <div class="col-md-6 d-flex align-items-end justify-content-left">
             <button type="submit" class="btn btn-primary">Search</button>
         </div>
     </form>
-    <script>
-        $(document).ready(function () {
-            $('.select2-multiple').select2({
-                placeholder: "Select locations",
-                width: '100%'
-            });
-
-            const locations = JSON.parse('{{ locations|tojson|safe }}');
-            locations.forEach(location => {
-                $('#departLocation').append(new Option(location, location));
-                $('#destinationLocation').append(new Option(location, location));
-            });
-        });
-
-        const departDateInput = document.getElementById('departDate');
-        const resetDateButton = document.getElementById('resetDate');
-
-        // Open date picker when the date field is clicked
-        departDateInput.addEventListener('focus', (event) => {
-            event.preventDefault();
-            departDateInput.showPicker();
-        });
-
-        // Prevent any dates being changed by the user manually typing
-        departDateInput.addEventListener('keydown', (event) => {
-            event.preventDefault();
-        });
-
-        // Set default date to today and prevent selecting past dates
-        const today = new Date().toISOString().split('T')[0];
-        departDateInput.value = today;
-        departDateInput.setAttribute('min', today);
-
-        // Set max date to 90 days from today
-        let maxDate = new Date();
-        maxDate.setDate(maxDate.getDate() + 90);
-        departDateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
-    </script>
 </div>
 <div>
     <div class="deals_text"><span class="deals_underline">Currently Hot Locations</span></div>
@@ -118,4 +88,42 @@
         </div>
     </div>
 </div>
+<script>
+    $(document).ready(function () {
+        $('.select2-multiple').select2({
+            placeholder: "Select locations",
+            width: '100%'
+        });
+
+        const locations = JSON.parse('{{ locations|tojson|safe }}');
+        locations.forEach(location => {
+            $('#departLocation').append(new Option(location, location));
+            $('#destinationLocation').append(new Option(location, location));
+        });
+    });
+
+    const departDateInput = document.getElementById('departDate');
+    const resetDateButton = document.getElementById('resetDate');
+
+    // Open date picker when the date field is clicked
+    departDateInput.addEventListener('focus', (event) => {
+        event.preventDefault();
+        departDateInput.showPicker();
+    });
+
+    // Prevent any dates being changed by the user manually typing
+    departDateInput.addEventListener('keydown', (event) => {
+        event.preventDefault();
+    });
+
+    // Set default date to today and prevent selecting past dates
+    const today = new Date().toISOString().split('T')[0];
+    departDateInput.value = today;
+    departDateInput.setAttribute('min', today);
+
+    // Set max date to 90 days from today
+    let maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 90);
+    departDateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
+</script>
 {% endblock %}

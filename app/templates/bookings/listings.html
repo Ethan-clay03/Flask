@@ -5,11 +5,20 @@
         <div class="col-md-6 text-start mb-3 d-flex align-items-center flex-md-nowrap flex-wrap" id="dateContainer">
             <label class="form-label me-2">Departure Date:</label>
             <div class="col-md-6">
-                <input type="date" class="form-control" id="departDate" name="departDate" required>
+                <input type="date" class="form-control" id="departDate" name="departDate" value="{{ depart_date }}" required>
             </div>
             <button type="button" class="btn btn-warning ms-2" id="resetDate">
                 <i class="fa-solid fa-rotate-right"></i> Reset Date
             </button>
+        </div>
+        <div class="col-md-6 text-start mb-3 d-flex align-items-center flex-md-nowrap flex-wrap" id="seatTypeContainer">
+            <label class="form-label me-2">Seat Type:</label>
+            <div class="col-md-6">
+                <select class="form-select" id="seatType" name="seatType">
+                    <option value="economy" {% if form_data['seatType'] == 'economy' %}selected{% endif %}>Economy</option>
+                    <option value="business" {% if form_data['seatType'] == 'business' %}selected{% endif %}>Business</option>
+                </select>
+            </div>
         </div>
         <div class="text-end mb-3">
             <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#filterModal">
@@ -179,7 +188,9 @@
 
         // Set default date to today and prevent selecting past dates
         const today = new Date().toISOString().split('T')[0];
-        departDateInput.value = today;
+        if (!departDateInput.value) {
+            departDateInput.value = today;
+        }
         departDateInput.setAttribute('min', today);
 
         // Set max date to 90 days from today
@@ -192,8 +203,10 @@
             departDateInput.value = today;
         });
 
-        // Event listener for date picker change
+        // Event listener for date picker change & Seat type
         $('#departDate').change(applyFilters);
+        $('#seatType').change(applyFilters);
+
 
 
         // Event listener for applying filters
@@ -238,9 +251,12 @@
         filterData.depart_location = $('#depart_location').val();
         filterData.destination_location = $('#destination_location').val();
 
-        //Get depart date from departure date field and inject into filtered data
+        // Get depart date from departure date field and inject into filtered data
         const selectedDate = $('#departDate').val();
         filterData.date = selectedDate;
+
+        // Add seat type to filter data
+        filterData.seatType = $('#seatType').val();
 
         return filterData;
     }
@@ -308,6 +324,5 @@
     }
 </script>
 
-</body>
 </html>
 {% endblock %}

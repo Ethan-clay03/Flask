@@ -184,7 +184,7 @@
             const seatType = seatTypeInput.value;
             const listingId = "{{listing.id}}";
     
-            window.location.href = `{{ url_for('bookings.payment') }}?date=${departDate}&seats=${numSeats}&listing_id=${listingId}`;
+            window.location.href = `{{ url_for('bookings.payment') }}?date=${departDate}&seats=${numSeats}&listing_id=${listingId}&seat_type=${seatType}`;
         });
     });
     </script>

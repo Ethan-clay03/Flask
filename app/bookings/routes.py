@@ -1,6 +1,6 @@
-from flask import render_template, redirect, url_for, request, jsonify, session, flash
+from flask import render_template, redirect, url_for, request, jsonify, session, flash, g
 from app.bookings import bp
-from app.models import Listings
+from app.models import Listings, Bookings, ListingAvailability
 from app import db
 from app.logger import error_logger
 from app.main.utils import calculate_discount, pretty_time
@@ -11,7 +11,7 @@ from app import user_permission, permission_required
 
 @bp.route('/')
 def redirect_index():
-    return redirect(url_for('bookings.index'), code=301)
+    return redirect(url_for('bookings.listings'), code=301)
 
 @bp.route('/listings')
 def listings():
@@ -97,27 +97,47 @@ def listing_apply_update():
 
 
 @bp.route('/checkout')
-def checkout(): 
-    if not session['checkout_cache']:
+@permission_required(user_permission)
+def checkout():
+    if not session.get('checkout_cache'):
         flash("Please select a booking", 'error')
-    depart_date = session['checkout_cache']['depart_date']
-    num_seats = session['checkout_cache']['num_seats']
-    listing_id = session['checkout_cache']['listing_id']
+        return redirect(url_for('bookings.listings'))
 
-    session['checkout_cache'] = {
-        'depart_date': depart_date,
-        'num_seats': num_seats,
-        'listing_id': listing_id
-    }
+    cache = session['checkout_cache']
+    depart_date = cache['depart_date']
+    num_seats = int(cache['num_seats'])
+    listing_id = cache['listing_id']
+    seat_type = cache['seat_type']
 
     listing = Listings.search_listing(listing_id)
     listing.depart_time = pretty_time(listing.depart_time)
     listing.destination_time = pretty_time(listing.destination_time)
+
+    per_person_excluding_discount = listing.business_fair_cost if seat_type == 'business' else listing.economy_fair_cost
+    discount_percentage, days_away = calculate_discount(depart_date)
     
+    discount_amount = (per_person_excluding_discount * discount_percentage) / 100
+    per_person_cost = per_person_excluding_discount - discount_amount
+
+    listing.per_person_cost = per_person_cost
+    listing.total_cost = per_person_cost * num_seats
+    total_savings = discount_amount * num_seats
+
+    # Add per_person_cost to checkout_cache in session
+    session['checkout_cache']['per_person_cost'] = per_person_cost
+
     depart_date_obj = datetime.strptime(depart_date, '%Y-%m-%d')
     depart_date_formatted = depart_date_obj.strftime('%d-%m-%Y')
 
-    return render_template('bookings/checkout.html', listing=listing, num_seats=num_seats, depart_date=depart_date_formatted)
+    return render_template(
+        'bookings/checkout.html', 
+        listing=listing, 
+        num_seats=num_seats, 
+        depart_date=depart_date_formatted, 
+        seat_type=seat_type.capitalize(), 
+        total_savings=total_savings
+    )
+
 
 @bp.route('/payment')
 @permission_required(user_permission)
@@ -125,8 +145,9 @@ def payment():
     depart_date = request.args.get('date')
     num_seats = request.args.get('seats')
     listing_id = request.args.get('listing_id')
+    seat_type = request.args.get('seat_type')
 
-    if not depart_date or not num_seats or not listing_id:
+    if not depart_date or not num_seats or not listing_id or not seat_type:
         flash('Please select a booking in order to checkout.', 'error')
         return redirect(url_for('bookings.listings'))
 
@@ -134,7 +155,8 @@ def payment():
         'listing_id': listing_id,
         'depart_date': depart_date,
         'num_seats': num_seats,
-        'listing_id': listing_id
+        'listing_id': listing_id,
+        'seat_type': seat_type
     }
 
     return redirect(url_for('bookings.checkout'))
@@ -186,36 +208,72 @@ def listing(id):
         total_cost=total_cost
     )
 
-
 @bp.route('/checkout_post', methods=['POST'])
+@permission_required(user_permission)
 def checkout_post():
     card_number = request.form['cardNumber']
     card_expiry = request.form['cardExpiry']
     card_cvc = request.form['cardCVC']
     
-    # Validate and process payment (pseudo-code)
-    if not validate_payment(card_number, card_expiry, card_cvc):
-        flash('Payment failed. Please check your card details.')
-        return redirect(url_for('checkout'))  # Redirect to the checkout page on failure
+    valid_payment_details, payment_error_message = validate_payment(card_number, card_expiry, card_cvc)
+    if not valid_payment_details:
+        flash(payment_error_message, 'error')
+        return redirect(url_for('bookings.checkout'))
 
     # Assume that listing_id and user_id are obtained from session or form
-    listing_id = request.form['listing_id']
-    user_id = request.form['user_id']
-    num_seats = int(request.form['num_seats'])
+    cache = session['checkout_cache']
+    listing_id = cache['listing_id']
+    user_id = g.identity.id
+    num_seats = int(cache['num_seats'])
+    seat_type = cache['seat_type']
+    per_person_cost = cache['per_person_cost']
+    total_cost = per_person_cost * num_seats
 
-    # Create booking
-    if create_booking(listing_id, user_id, num_seats):
-        # Update availability after successful booking
-        update_listing_availability(listing_id, num_seats)
-        flash('Booking successful!')
-    else:
-        flash('Booking failed. Please try again.')
-    
-    return redirect(url_for('booking_confirmation'))
+    depart_date = cache['depart_date']
+
+    # Convert depart_date to date object
+    depart_date_obj = datetime.strptime(depart_date, '%Y-%m-%d').date()
+
+    availability = ListingAvailability.check_availability(listing_id, depart_date_obj, seat_type, num_seats)
+    if availability != True:
+        flash(f"Not enough seats available. There are {availability} remaining seats for {seat_type.capitalize()}.", 'error')
+        return redirect(url_for('bookings.listing', id=listing_id))
+
+    try:
+        if Bookings.create_booking(listing_id, user_id, total_cost, seat_type, num_seats):
+            # Update availability
+            ListingAvailability.update_availability(listing_id, depart_date_obj, seat_type, num_seats)
+            db.session.commit()
+            flash('Booking successful!', 'success')
+        else:
+            flash('Booking failed. Please try again.', 'error')
+            return redirect(url_for('bookings.checkout'))
+    except Exception as e:
+        db.session.rollback()
+        error_logger.debug(f"Error processing booking: {e}")
+        flash('Booking failed. Please try again.', 'error')
+
+    return redirect(url_for('bookings.listings'))
+
 
 def validate_payment(card_number, card_expiry, card_cvc):
-    # Implement your payment validation logic here
-    return 
+    if len(card_number) != 16 or not card_number.isdigit():
+        return False, "Invalid card number. It must be 16 digits."
+    
+    if len(card_cvc) != 3 or not card_cvc.isdigit():
+        return False, "Invalid CVC. It must be 3 digits."
+
+    try:
+        exp_month, exp_year = card_expiry.split('/')
+        exp_month = int(exp_month)
+        exp_year = int(exp_year) + 2000 
+        expiry_date = datetime(exp_year, exp_month, 1)
+        if expiry_date < datetime.now():
+            return False, "Card expiry date cannot be in the past."
+    except ValueError:
+        return False, "Invalid expiry date format. It must be MM/YY."
+
+    return True, 'Success'
 
 @bp.route('/filter_bookings', methods=['POST'])
 def filter_bookings():

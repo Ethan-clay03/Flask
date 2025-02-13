@@ -10,15 +10,6 @@
             <div class="col-md-6">
                 <input type="date" class="form-control" id="departDate" name="departDate" required value="{{ selected_date or today }}">
             </div>
-            <div class="col-md-6 text-start mb-3 d-flex align-items-center flex-md-nowrap flex-wrap">
-                <label class="form-label me-2">Seat Type:</label>
-                <div class="col-md-6">
-                    <select class="form-select" id="seatType" name="seatType">
-                        <option value="economy">Economy</option>
-                        <option value="business">Business</option>
-                    </select>
-                </div>
-            </div>
             <button type="button" class="btn btn-warning ms-2" id="resetDate">
                 <i class="fa-solid fa-rotate-right"></i> Reset Date
             </button>
@@ -35,6 +26,15 @@
                 </select>
             </div>
         </div>
+        <div class="col-md-6 text-start mb-3 d-flex align-items-center flex-md-nowrap flex-wrap">
+            <label class="form-label me-2">Seat Type:</label>
+            <div class="col-md-6">
+                <select class="form-select" id="seatType" name="seatType">
+                    <option value="economy" {% if seat_type == 'economy' %}selected{% endif %}>Economy</option>
+                    <option value="business" {% if seat_type == 'business' %}selected{% endif %}>Business</option>
+                </select>
+            </div>
+        </div>        
     </div>
     <h2 class="mb-4" style="text-align: center; margin-top: 40px;">Booking Details</h2>
     <div class="row">
@@ -61,19 +61,17 @@
         <div class="card-body">
             <h2 class="card-title">Transport Information</h2>
             <p><strong>Transport Type:</strong> {{ listing.transport_type }}</p>
-            <p><strong>Price:</strong> £<span id="originalPrice">{{ listing.economy_fair_cost }}</span></p>
-            <p id="discountedPrice" style="display: none;">
-                <strong>Discounted Price:</strong> £<span id="discountedPriceValue"></span>
+            <p><strong>Price:</strong> £<span id="originalPrice">{{ base_price }}</span></p>
+            <p id="discountedPrice" style="display: {% if discount > 0 %}block{% else %}none{% endif %};">
+                <strong>Discounted Price:</strong> £<span id="discountedPriceValue">{{ discounted_price }}</span>
             </p>
         </div>
     </div>
     <div class="card mb-4">
         <div class="card-body">
             <h2 class="card-title">Total Cost</h2>
-            <p><strong>Cost Per Person:</strong> {{ listing.transport_type }}</p>
-            <p><strong>Total Cost:</strong> £<span id="totalCost">{{ listing.fair_cost }}</span></p>
-            <p><strong>Total Saved:</strong> £<span id="totalSaved">0.00</span></p>
-
+            <p><strong>Total Cost:</strong> £<span id="totalCost">{{ total_cost }}</span></p>
+            <p><strong>Total Saved:</strong> £<span id="totalSaved">{{ base_price - discounted_price }}</span></p>
         </div>
     </div>
     <div class="text-center">
@@ -92,111 +90,103 @@
     </div>
 </div>
 <script>
-$(document).ready(function () {
-    const filterDataDepartDate = "{{ selected_date if selected_date else '' }}";
-    const resetDateButton = document.getElementById('resetDate');
-    const today = new Date().toISOString().split('T')[0];
-    const departDateInput = document.getElementById('departDate');
-    const numSeatsInput = document.getElementById('numSeats');
-    const seatTypeInput = document.getElementById('seatType'); // Add this line
-
-    if (!filterDataDepartDate) {
-        departDateInput.value = today;
-    } else {
-        departDateInput.value = filterDataDepartDate;
-    }
-
-    departDateInput.setAttribute('min', today);
-
-    let maxDate = new Date();
-    maxDate.setDate(maxDate.getDate() + 90);
-    departDateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
-
-    // Reset date to today when the reset button is clicked
-    resetDateButton.addEventListener('click', () => {
-        departDateInput.value = today;
-        departDateInput.dispatchEvent(new Event('change'));
-    });
-
-    // Prevent any dates being changed by the user manually typing
-    departDateInput.addEventListener('keydown', (event) => {
-        event.preventDefault();
-    });
-
-    // Send the updated date, number of seats, and seat type to the server to check for discounts and calculate total cost
-    function updateData() {
-        const newDate = departDateInput.value;
-        const numSeats = numSeatsInput.value;
-        const seatType = seatTypeInput.value; // Add this line
-
-        $.ajax({
-            url: "{{ url_for('bookings.listing_apply_update') }}",
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ date: newDate, seats: numSeats, seatType: seatType }), // Update this line
-            success: function (data) {
-                const discountBanner = document.getElementById('discountBanner');
-                const originalPrice = document.getElementById('originalPrice');
-                const discountedPrice = document.getElementById('discountedPrice');
-                const discountedPriceValue = document.getElementById('discountedPriceValue');
-                const discountPercent = document.getElementById('discountPercent');
-                const daysAway = document.getElementById('daysAway');
-                const totalCost = document.getElementById('totalCost');
-                const totalSaved = document.getElementById('totalSaved');
-                const originalPriceValue = parseFloat(originalPrice.textContent.replace('£', ''));
-
-                let discountValue = originalPriceValue;
-                let finalPrice = originalPriceValue;
-
-                // Calculate the cost based on the seat type
-                if (seatType === "business") {
-                    discountValue = originalPriceValue * 2;
-                }
-
-                if (data.discount) {
-                    discountValue = discountValue * (1 - data.discount / 100);
-                    originalPrice.style.textDecoration = 'line-through';
-                    discountedPriceValue.textContent = `${discountValue.toFixed(2)}`;
-                    discountedPrice.style.display = 'block';
-                    discountBanner.style.display = 'block';
+    $(document).ready(function () {
+        const filterDataDepartDate = "{{ selected_date if selected_date else '' }}";
+        const resetDateButton = document.getElementById('resetDate');
+        const today = new Date().toISOString().split('T')[0];
+        const departDateInput = document.getElementById('departDate');
+        const numSeatsInput = document.getElementById('numSeats');
+        const seatTypeInput = document.getElementById('seatType');
+        const bookButton = document.getElementById('bookButton');
+    
+        if (!filterDataDepartDate) {
+            departDateInput.value = today;
+        } else {
+            departDateInput.value = filterDataDepartDate;
+        }
+    
+        departDateInput.setAttribute('min', today);
+    
+        let maxDate = new Date();
+        maxDate.setDate(maxDate.getDate() + 90);
+        departDateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
+    
+        // Reset date to today when the reset button is clicked
+        resetDateButton.addEventListener('click', () => {
+            departDateInput.value = today;
+            departDateInput.dispatchEvent(new Event('change'));
+        });
+    
+        // Prevent any dates being changed by the user manually typing
+        departDateInput.addEventListener('keydown', (event) => {
+            event.preventDefault();
+        });
+    
+        // Send the updated date, number of seats, and seat type to the server to check for discounts and calculate total cost
+        function updateData() {
+            const newDate = departDateInput.value;
+            const numSeats = numSeatsInput.value;
+            const seatType = seatTypeInput.value;
+    
+            $.ajax({
+                url: "{{ url_for('bookings.listing_apply_update') }}",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ date: newDate, seats: numSeats, seatType: seatType }),
+                success: function (data) {
+                    const discountBanner = document.getElementById('discountBanner');
+                    const originalPrice = document.getElementById('originalPrice');
+                    const discountedPrice = document.getElementById('discountedPrice');
+                    const discountedPriceValue = document.getElementById('discountedPriceValue');
+                    const discountPercent = document.getElementById('discountPercent');
+                    const daysAway = document.getElementById('daysAway');
+                    const totalCost = document.getElementById('totalCost');
+                    const totalSaved = document.getElementById('totalSaved');
+    
+                    // Update UI with the data received from the server
+                    originalPrice.textContent = `${data.base_price.toFixed(2)}`;
                     discountPercent.textContent = data.discount;
                     daysAway.textContent = data.days_away;
-                } else {
-                    originalPrice.style.textDecoration = 'none';
-                    discountedPrice.style.display = 'none';
-                    discountBanner.style.display = 'none';
+                    discountedPriceValue.textContent = `${data.discounted_price.toFixed(2)}`;
+                    totalCost.textContent = `${data.total_cost.toFixed(2)}`;
+                    totalSaved.textContent = `${data.total_saved.toFixed(2)}`;
+    
+                    // Show or hide discount banner
+                    if (data.discount > 0) {
+                        discountBanner.style.display = 'block';
+                        originalPrice.style.textDecoration = 'line-through';
+                        discountedPrice.style.display = 'block';
+                    } else {
+                        discountBanner.style.display = 'none';
+                        originalPrice.style.textDecoration = 'none';
+                        discountedPrice.style.display = 'none';
+                    }
+                },
+                error: function () {
+                    alert('Error applying discount. Please try again.');
                 }
-
-                // Update total cost div
-                finalPrice = discountValue * numSeats;
-                totalCost.textContent = `${finalPrice.toFixed(2)}`;
-                totalSaved.textContent = `${(originalPriceValue * numSeats - finalPrice).toFixed(2)}`;
-            },
-            error: function () {
-                alert('Error applying discount. Please try again.');
-            }
+            });
+        }
+    
+        departDateInput.addEventListener('change', updateData);
+        numSeatsInput.addEventListener('change', updateData);
+        seatTypeInput.addEventListener('change', updateData);
+    
+        // Trigger the change event to apply the initial discount if a date is selected
+        if (filterDataDepartDate) {
+            updateData();
+        }
+    
+        // Handle "Book Now" button click
+        bookButton.addEventListener('click', () => {
+            const departDate = departDateInput.value;
+            const numSeats = numSeatsInput.value;
+            const seatType = seatTypeInput.value;
+            const listingId = "{{listing.id}}";
+    
+            window.location.href = `{{ url_for('bookings.payment') }}?date=${departDate}&seats=${numSeats}&listing_id=${listingId}`;
         });
-    }
-
-    departDateInput.addEventListener('change', updateData);
-    numSeatsInput.addEventListener('change', updateData);
-    seatTypeInput.addEventListener('change', updateData); // Add this line
-
-    // Trigger the change event to apply the initial discount if a date is selected
-    if (filterDataDepartDate) {
-        updateData();
-    }
-
-    // Handle "Book Now" button click
-    bookButton.addEventListener('click', () => {
-        const departDate = departDateInput.value;
-        const numSeats = numSeatsInput.value;
-        const seatType = seatTypeInput.value; // Add this line
-        const listingId = "{{listing.id}}";
-
-        window.location.href = `{{ url_for('bookings.payment') }}?date=${departDate}&seats=${numSeats}&listing_id=${listingId}`;
     });
-});
-
-</script>
+    </script>
+    
 {% endblock %}

@@ -67,3 +67,16 @@ class Listings(db.Model):
     
         return cls.query.get(listing_id)
 
+    @classmethod
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'depart_location': self.depart_location,
+            'depart_time': self.depart_time,
+            'destination_location': self.destination_location,
+            'destination_time': self.destination_time,
+            'transport_type': self.transport_type,
+            'economy_fair_cost': self.economy_fair_cost,
+            'business_fair_cost': self.business_fair_cost
+        }
+        

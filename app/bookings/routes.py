@@ -50,7 +50,7 @@ def listings():
 
     # Get all locations for dropdowns
     locations = Listings.get_all_locations(True)
-    
+
     return render_template(
         'bookings/listings.html',
         items=paginated_listings,
@@ -66,19 +66,35 @@ def listings():
             'seatType': seat_type
         }
     )
-
-
 @bp.route('/listing/apply_update', methods=['POST'])
 def listing_apply_update(): 
     data = request.get_json()
     selected_date = data.get('date')
+    num_seats = int(data.get('seats'))
+    seat_type = data.get('seatType')
+    
     discount, days_away = calculate_discount(selected_date)
+
+    listing = session['listing']
+    if seat_type == "business":
+        base_price = listing['business_fair_cost']
+    else:
+        base_price = listing['economy_fair_cost']
+    
+    discounted_price = base_price * (1 - discount / 100)
+    total_cost = discounted_price * num_seats
+    total_saved = (base_price * num_seats) - total_cost
 
     response = {
         'discount': discount,
-        'days_away': days_away
+        'days_away': days_away,
+        'base_price': base_price,
+        'discounted_price': discounted_price,
+        'total_cost': total_cost,
+        'total_saved': total_saved
     }
     return jsonify(response)
+
 
 @bp.route('/checkout')
 def checkout(): 
@@ -134,14 +150,42 @@ def show_listing_dirty(id):
 @bp.route('/listing/<int:id>', methods=['GET'])
 def listing(id):
     listing = Listings.search_listing(id)
+    
+    if 'listing' not in session:
+        session['listing'] = {}
+
+    session['listing']['economy_fair_cost'] = listing.economy_fair_cost
+    session['listing']['business_fair_cost'] = listing.business_fair_cost
+
     listing.depart_time = pretty_time(listing.depart_time)
     listing.destination_time = pretty_time(listing.destination_time)
     filter_data = session.pop('filter_data', None)
 
     selected_date = filter_data['date'] if filter_data and 'date' in filter_data else None
+    seat_type = filter_data['seatType'] if filter_data and 'seatType' in filter_data else 'economy'
+
     discount, days_away = calculate_discount(selected_date) if selected_date else (0, 0)
 
-    return render_template('bookings/listing.html', listing=listing, selected_date=selected_date, discount=discount, days_away=days_away)
+    if seat_type == "business":
+        base_price = listing.business_fair_cost
+    else:
+        base_price = listing.economy_fair_cost
+
+    discounted_price = base_price * (1 - discount / 100)
+    total_cost = discounted_price
+
+    return render_template(
+        'bookings/listing.html',
+        listing=listing,
+        selected_date=selected_date,
+        seat_type=seat_type,
+        discount=discount,
+        days_away=days_away,
+        base_price=base_price,
+        discounted_price=discounted_price,
+        total_cost=total_cost
+    )
+
 
 @bp.route('/checkout_post', methods=['POST'])
 def checkout_post():
@@ -180,8 +224,8 @@ def filter_bookings():
     depart_location = data.get('depart_location', [])
     destination_location = data.get('destination_location', [])
     depart_date = data.get('date')
-    seat_type = data.get('seatType', 'economy')  # Default to 'economy' if not provided
-    page = int(data.get('page', 1))  # Get the page parameter or default to 1
+    seat_type = data.get('seatType', 'economy')  # Default to economy
+    page = int(data.get('page', 1)) 
     per_page = 10  # How many listings show per page
 
     discount, days_away = calculate_discount(depart_date)

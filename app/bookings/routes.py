@@ -208,6 +208,21 @@ def listing(id):
         total_cost=total_cost
     )
 
+# This route should be used after show_listing if used internally as this clears the ajax parameters before redirecting the user
+@bp.route('/payment/successful/<int:id>', methods=['GET'])
+@permission_required(user_permission)
+def payment_complete(id):
+    
+    booking = Bookings.search_booking(id)
+
+    if booking.user_id != g.identity.id:
+        flash ("Unable to load payment, please check your booking ID", 'error')
+        return redirect(url_for('main.index'))
+
+    return render_template(
+        'bookings/payment_success.html',
+    )
+
 @bp.route('/checkout_post', methods=['POST'])
 @permission_required(user_permission)
 def checkout_post():
@@ -240,7 +255,8 @@ def checkout_post():
         return redirect(url_for('bookings.listing', id=listing_id))
 
     try:
-        if Bookings.create_booking(listing_id, user_id, total_cost, seat_type, num_seats):
+        booking = Bookings.create_booking(listing_id, user_id, total_cost, seat_type, num_seats)
+        if booking:
             # Update availability
             ListingAvailability.update_availability(listing_id, depart_date_obj, seat_type, num_seats)
             db.session.commit()
@@ -253,7 +269,7 @@ def checkout_post():
         error_logger.debug(f"Error processing booking: {e}")
         flash('Booking failed. Please try again.', 'error')
 
-    return redirect(url_for('bookings.listings'))
+    return redirect(url_for('bookings.payment_complete', id=booking.id))
 
 
 def validate_payment(card_number, card_expiry, card_cvc):

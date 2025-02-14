@@ -25,8 +25,12 @@ class Bookings(UserMixin, db.Model):
             )
             db.session.add(new_booking)
             db.session.commit()
-            return True
+            return new_booking
         except Exception as e:
             db.session.rollback()
             print(f"Error creating booking: {e}")
             return False
+
+    @classmethod
+    def search_booking(cls, id):
+        return cls.query.get(id)

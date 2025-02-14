@@ -80,3 +80,6 @@ class Listings(db.Model):
             'business_fair_cost': self.business_fair_cost
         }
         
+    @classmethod
+    def check_table_exists(cls):
+        return cls.get_top_listings(1)

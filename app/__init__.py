@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 from app.logger import auth_logger
 from functools import wraps
 import os
+import pymysql
+from sqlalchemy.sql import text
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -28,10 +30,54 @@ def permission_required(permission):
         return decorated_function
     return decorator
 
-
 super_admin_permission = Permission(RoleNeed('super-admin'))
 admin_permission = Permission(RoleNeed('admin'))
 user_permission = Permission(RoleNeed('user'))
+
+
+def create_database_if_not_exists(db_host, db_user, db_password, db_name):
+    # Connect using Root to create schema if doesn't exist and then create user for that schema
+    connection = pymysql.connect(
+        host=db_host,
+        user='root',
+        password=db_password
+    )
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db_name}")
+            # Create the user from .env details
+            cursor.execute(f"CREATE USER IF NOT EXISTS '{db_user}'@'%' IDENTIFIED BY '{db_password}'")
+            cursor.execute(f"GRANT ALL PRIVILEGES ON {db_name}.* TO '{db_user}'@'%'")
+            cursor.execute(f"FLUSH PRIVILEGES")
+        connection.commit()
+    finally:
+        connection.close()
+
+    # Reconnect using user in .env to prevent permission issues
+    connection = pymysql.connect(
+        host=db_host,
+        user=db_user,
+        password=db_password,
+        database=db_name
+    )
+
+    try:
+        with connection.cursor() as cursor:
+            # Check if tables exist
+            cursor.execute("SHOW TABLES;")
+            tables = cursor.fetchall()
+            if not tables:
+                with open('sql-setup/init.sql', 'r') as file:
+                    sql_commands = file.read().split(';')
+                    for command in sql_commands:
+                        if command.strip():
+                            cursor.execute(command)
+                connection.commit()
+    finally:
+        connection.close()
+
+
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -48,8 +94,11 @@ def create_app(config_class=Config):
     db_password = os.getenv("DATABASE_PASSWORD")
     db_name = os.getenv("DATABASE_NAME")
     
+    create_database_if_not_exists(db_host, db_user, db_password, db_name)
+    
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
     app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_name}"
+
 
     # Initialize extensions with the app
     db.init_app(app)
@@ -75,7 +124,6 @@ def create_app(config_class=Config):
             else:
                 auth_logger.debug(f'No role found for user {identity.user.username}.')
 
-
     # Add global template variables
     @app.context_processor
     def set_global_html_variable_values():
@@ -99,13 +147,13 @@ def create_app(config_class=Config):
                 'user_permission': g.user_permission,
                 'super_admin_permission': g.super_admin_permission
             }
-        
+
     # @app.errorhandler(Exception)
     # def handle_exception(e):
     #     app.logger.error(f"Unhandled exception: {e}")
     #     session['error_message'] = str(e)
     #     return redirect(url_for('errors.quandary'))
-    
+
     @app.errorhandler(403)
     def handle_exception(e):
         app.logger.error(f"Unhandled exception: {e}")
@@ -133,10 +181,9 @@ def create_app(config_class=Config):
                     g.admin_permission = admin_permission
                     g.is_admin = True
 
-    login_manager.login_view = 'profile.login'
-    
-    return app
+    login_manager.login_view = 'profile.login' 
 
+    return app
 
 @login_manager.user_loader
 def load_user(user_id):

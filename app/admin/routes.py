@@ -4,6 +4,7 @@ from app import admin_permission, permission_required, super_admin_permission
 from app.models import Listings, ListingImages, User
 from app.admin import bp
 from app.main.utils import generate_time_options
+from sqlalchemy.sql import text
 
 
 @bp.route('/home')
@@ -296,3 +297,21 @@ def delete_image(image_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@bp.route('/init/database', methods=['GET'])
+def check_database_exists():
+    try:
+        if Listings.check_table_exists():
+            flash ("Database already exists, 'error")
+        else:
+            raise Exception('Schema exists but database does not')
+    except:
+        with open('sql-setup/init.sql', 'r') as file:
+            sql_commands = file.read().split(';')
+            for command in sql_commands:
+                if command.strip():
+                    db.session.execute(text(command))
+        
+        db.session.commit()
+        flash ("Database initialised", 'success')

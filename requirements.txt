@@ -11,3 +11,6 @@ flask-wtf
 flask-security
 flask-principal
 setuptools
+fpdf2
+qrcode[pil]
+python-barcode

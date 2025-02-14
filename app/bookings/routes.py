@@ -1,9 +1,9 @@
-from flask import render_template, redirect, url_for, request, jsonify, session, flash, g
+from flask import render_template, redirect, url_for, request, jsonify, session, flash, g, send_file
 from app.bookings import bp
 from app.models import Listings, Bookings, ListingAvailability
 from app import db
 from app.logger import error_logger
-from app.main.utils import calculate_discount, pretty_time
+from app.main.utils import calculate_discount, pretty_time, create_receipt, create_plane_ticket
 import json
 from datetime import datetime
 from app import user_permission, permission_required
@@ -209,7 +209,7 @@ def listing(id):
     )
 
 # This route should be used after show_listing if used internally as this clears the ajax parameters before redirecting the user
-@bp.route('/payment/successful/<int:id>', methods=['GET'])
+@bp.route('/checkout/success/<int:id>', methods=['GET'])
 @permission_required(user_permission)
 def payment_complete(id):
     
@@ -220,7 +220,7 @@ def payment_complete(id):
         return redirect(url_for('main.index'))
 
     return render_template(
-        'bookings/payment_success.html',
+        'bookings/payment_success.html', id=booking.id
     )
 
 @bp.route('/checkout_post', methods=['POST'])
@@ -353,3 +353,25 @@ def process_images(listings):
             item.main_image_url = url_for('main.upload_file', filename='booking_image_not_found.jpg')
         # Must be a single quote JSON otherwise doesn't work in frontend
         item.image_urls = json.dumps([url_for('main.upload_file', filename=img.image_location) for img in item.listing_images]).replace('"', '&quot;')
+
+
+@bp.route('/payment_success/<int:id>')
+def payment_success(booking_id):
+    return render_template('payment_success.html', booking_id=booking_id)
+
+@bp.route('/generate-receipt/<int:id>')
+def generate_receipt(id):
+    booking = Bookings.search_booking(id)
+    listing = Listings.search_listing(booking.listing_id)
+    pdf = create_receipt(1, booking.seat_type, '2024-02-24', listing)
+    
+    return send_file(pdf, as_attachment=True, download_name='receipt.pdf')
+
+@bp.route('/generate-ticket/<int:id>')
+def generate_ticket(id):
+    booking = Bookings.search_booking(id)
+    listing = Listings.search_listing(booking.listing_id)
+    
+    pdf = create_plane_ticket(booking.seat_num, booking.seat_type, booking.depart_date, listing, booking_id)
+    
+    return send_file(pdf, as_attachment=True, download_name='plane_ticket.pdf')

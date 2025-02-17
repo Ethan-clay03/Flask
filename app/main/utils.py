@@ -8,6 +8,7 @@ import qrcode
 import barcode
 from barcode.writer import ImageWriter
 from io import BytesIO
+import os
 from PIL import Image
 
 def allowed_image_files(filename):
@@ -50,31 +51,60 @@ def pretty_time(unformatted_time, to_12_hour=True):
     return formatted_time
 
 
+
+def get_static_files(*path_parts):
+    return os.path.join(current_app.root_path, 'static', *path_parts)
+
 def create_receipt(seat_num, seat_type, depart_date, listing):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
     
+    # Add company logo
+    company_logo_path = get_static_files('core', '1.jpg')
+    pdf.image(company_logo_path, x=10, y=8, w=33)
+    
+    # Adjust y position to avoid overlapping
+    pdf.set_xy(10, 45)
     pdf.cell(200, 10, txt="Receipt", ln=True, align='C')
-
+    
     pdf.cell(200, 10, txt=f"Seat Number: {seat_num}", ln=True)
     pdf.cell(200, 10, txt=f"Seat Type: {seat_type}", ln=True)
     pdf.cell(200, 10, txt=f"Departure Date: {depart_date}", ln=True)
     pdf.cell(200, 10, txt=f"Departure Location: {listing.depart_location}", ln=True)
     pdf.cell(200, 10, txt=f"Destination Location: {listing.destination_location}", ln=True)
-
+    
     if seat_type.lower() == 'economy':
         cost = listing.economy_fair_cost
     elif seat_type.lower() == 'business':
         cost = listing.business_fair_cost
     
     pdf.cell(200, 10, txt=f"Total Cost: {cost}", ln=True)
-
+    
+    # Generate barcode
+    receipt_data = f"{seat_num},{seat_type},{depart_date},{listing.depart_location},{listing.destination_location},{cost}"
+    code128 = barcode.get('code128', receipt_data, writer=ImageWriter())
+    barcode_image = BytesIO()
+    code128.write(barcode_image)
+    barcode_image.seek(0)
+    
+    # Save barcode image
+    with open("barcode.png", "wb") as f:
+        f.write(barcode_image.read())
+    
+    pdf.image("barcode.png", x=150, y=8, w=50)
+    
+    # Add thank you message
+    pdf.set_font("Arial", size=16, style='B')
+    pdf.set_xy(10, 250)
+    pdf.cell(200, 10, txt="Thanks for choosing Horizon Travels!", ln=True, align='C')
+    
     output = BytesIO()
     pdf.output(output)
     output.seek(0)
-
+    
     return output
+
 
 def create_plane_ticket(seat_num, seat_type, depart_date, listing, booking_id):
     for i in range(seat_num):

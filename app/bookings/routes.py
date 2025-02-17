@@ -340,8 +340,6 @@ def filter_bookings():
     results_html = render_template('_results.html', items=paginated_items, page=page, total_pages=total_pages, discount=discount, days_away=days_away, seat_type=seat_type)
     return jsonify({'html': results_html})
 
-
-
 def process_images(listings):
     for item in listings:
         main_image = next((img for img in item.listing_images if img.main_image), None)

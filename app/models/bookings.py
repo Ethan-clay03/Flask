@@ -11,6 +11,8 @@ class Bookings(UserMixin, db.Model):
     seat_type = db.Column(db.String(50), nullable=False)
     num_seats = db.Column(db.Integer, nullable=False) 
     cancelled = db.Column(db.Boolean, default=False)
+    booking_date = db.Column(db.Date, nullable=False)
+    last_four_card_nums = db.Column(db.String(4), nullable=False)
 
     @staticmethod
     def create_booking(listing_id, user_id, amount_paid, seat_type, num_seats):

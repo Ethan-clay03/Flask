@@ -6,7 +6,7 @@ from flask_login import LoginManager, current_user
 from flask_principal import Principal, Permission, RoleNeed, identity_loaded
 from flask_wtf.csrf import CSRFProtect
 from dotenv import load_dotenv
-from app.logger import auth_logger
+from app.logger import auth_logger, error_logger
 from functools import wraps
 import os
 import pymysql
@@ -36,17 +36,23 @@ user_permission = Permission(RoleNeed('user'))
 
 
 def create_database_if_not_exists(db_host, db_user, db_password, db_name):
-    # Connect using Root to create schema if doesn't exist and then create user for that schema
-    connection = pymysql.connect(
-        host=db_host,
-        user='root',
-        password=db_password
-    )
+    try:
+        connection = pymysql.connect(
+            host=db_host,
+            user='root',
+            password=db_password
+        )
+    except:
+        error_message = 'Unable to connect to database as the root user, is the docker database running? If issue persists check README.md for help'
+        print(error_message)
+        error_logger.error(error_message)
+        exit()
+        
 
     try:
         with connection.cursor() as cursor:
             cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db_name}")
-            # Create the user from .env details
+            # Create the user 
             cursor.execute(f"CREATE USER IF NOT EXISTS '{db_user}'@'%' IDENTIFIED BY '{db_password}'")
             cursor.execute(f"GRANT ALL PRIVILEGES ON {db_name}.* TO '{db_user}'@'%'")
             cursor.execute(f"FLUSH PRIVILEGES")

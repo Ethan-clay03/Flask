@@ -1,15 +1,23 @@
 {% extends 'base.html' %}
 {% block content %}
-
 <body>
-    <h1>Payment Successful!</h1>
-    <p>Your payment has been processed successfully.</p>
-    <p>Click the buttons below to download your receipt and plane ticket:</p>
-    <form action="{{ url_for('bookings.generate_receipt', id=id) }}" method="get">
-        <button type="submit">Download Receipt</button>
-    </form>
-    <form action="{{ url_for('bookings.generate_ticket', id=id) }}" method="get">
-        <button type="submit">Download Plane Ticket</button>
-    </form>     
+    <div class="container text-center mt-5">
+        <h1 class="text-success">Payment Successful!</h1>
+        <p class="lead">Your payment has been processed successfully.</p>
+        <p>Click the buttons below to download your receipt and plane ticket:</p>
+        <div class="mt-4">
+            <form action="{{ url_for('bookings.generate_receipt', id=id) }}" method="get" class="d-inline">
+                <button type="submit" class="btn btn-success btn-lg">Download Receipt</button>
+            </form>
+            <form action="{{ url_for('bookings.generate_ticket', id=id) }}" method="get" class="d-inline">
+                <button type="submit" class="btn btn-primary btn-lg">Download Plane Ticket</button>
+            </form>
+        </div>
+        <div class="mt-4">
+            <a href="{{ url_for('main.index') }}" class="btn btn-warning btn-lg">
+                <i class="fas fa-home"></i> Go Home
+            </a>
+        </div>
+    </div>
 </body>
 {% endblock %}

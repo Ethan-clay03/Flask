@@ -84,7 +84,6 @@ def create_database_if_not_exists(db_host, db_user, db_password, db_name):
         connection.close()
 
 
-
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
@@ -153,6 +152,12 @@ def create_app(config_class=Config):
                 'user_permission': g.user_permission,
                 'super_admin_permission': g.super_admin_permission
             }
+    
+    # Prevent site being loaded using iFrames
+    @app.after_request
+    def set_x_frame_options(response):
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        return response
 
     # @app.errorhandler(Exception)
     # def handle_exception(e):

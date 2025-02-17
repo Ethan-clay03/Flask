@@ -245,6 +245,7 @@ def checkout_post():
     total_cost = per_person_cost * num_seats
 
     depart_date = cache['depart_date']
+    last_four_card_nums = card_number[-4:]
 
     # Convert depart_date to date object
     depart_date_obj = datetime.strptime(depart_date, '%Y-%m-%d').date()
@@ -255,7 +256,7 @@ def checkout_post():
         return redirect(url_for('bookings.listing', id=listing_id))
 
     try:
-        booking = Bookings.create_booking(listing_id, user_id, total_cost, seat_type, num_seats)
+        booking = Bookings.create_booking(listing_id, user_id, total_cost, seat_type, num_seats, depart_date, last_four_card_nums)
         if booking:
             # Update availability
             ListingAvailability.update_availability(listing_id, depart_date_obj, seat_type, num_seats)
@@ -268,6 +269,7 @@ def checkout_post():
         db.session.rollback()
         error_logger.debug(f"Error processing booking: {e}")
         flash('Booking failed. Please try again.', 'error')
+        return redirect(url_for('bookings.checkout'))
 
     return redirect(url_for('bookings.payment_complete', id=booking.id))
 
@@ -361,7 +363,7 @@ def payment_success(booking_id):
 def generate_receipt(id):
     booking = Bookings.search_booking(id)
     listing = Listings.search_listing(booking.listing_id)
-    pdf = create_receipt(1, booking.seat_type, '2024-02-24', listing)
+    pdf = create_receipt(booking, listing)
     
     return send_file(pdf, as_attachment=True, download_name='receipt.pdf')
 
@@ -370,6 +372,6 @@ def generate_ticket(id):
     booking = Bookings.search_booking(id)
     listing = Listings.search_listing(booking.listing_id)
     
-    pdf = create_plane_ticket(booking.seat_num, booking.seat_type, booking.depart_date, listing, booking_id)
+    pdf = create_plane_ticket(booking, listing)
     
     return send_file(pdf, as_attachment=True, download_name='plane_ticket.pdf')

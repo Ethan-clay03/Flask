@@ -27,9 +27,9 @@ https://trello.com/b/WILg5Qio/flask-website
 
 ## Getting setup
 
-If you wish to try out the site locally you are able to do so using Docker, which will run both the site and database. Alternatively
-I have provided commands to simply load the site but you will need to ensure you update the .env file for your database connection.
-I will NOT assist in getting it running locally (I have only tested all instructions on Windows 10 and unsure if Mac or Linux will work as expected).
+If you wish to try out the site locally you are able to do so using Docker, using docker will automatically create a Flask and database instance with test data. 
+Alternatively you can use the provided commands to load the site components but this may result in troubleshooting to get setup on your machine depending on installed
+dependancies. I will NOT assist in getting it running locally (I have only tested all instructions on Windows 10 and unsure if Mac or Linux will work as expected).
 
 
 
@@ -42,8 +42,11 @@ I will NOT assist in getting it running locally (I have only tested all instruct
 
 # Install Docker desktop https://www.docker.com/products/docker-desktop/
 # Once done the above steps. Navigate to the app directory within your terminal.
-# Then run `docker compose build` if it is your first time building the container.
-# If you have already built the containers previously simply run `docker compose up -d` (The -d means you can continue to use the terminal after the command has executed)
+# Simply run `docker compose up -d` (The -d means you can continue to use the terminal after the command has executed)
+# Running this command will also create a database schema, use the details below to login to the site, and then use the .env variables for the database connection
+# Super admin user
+# Email: ethan@email.com
+# Password: 1234
 
 
 ##########################################

@@ -6,7 +6,7 @@ from werkzeug.security import check_password_hash
 from app.profile import bp
 from app.models import User
 from app.logger import auth_logger
-from app import db
+from app import db, permission_required, user_permission
 
 @bp.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -193,8 +193,15 @@ def check_password_reset_2():
 
 
 @bp.route('/password-reset/reset-password')
+@permission_required(user_permission)
 def password_reset_3():
     return render_template('profile/password-reset-3.html')
+
+
+@bp.route('password-reset/from-profile')
+@permission_required(user_permission)
+def password_reset_from_profile():
+    email = current_user.email
 
 
 @bp.route('/password-reset/reset-password', methods=['POST'])
@@ -226,3 +233,17 @@ def manage_bookings():
         return render_template('profile/manage_bookings.html', username=current_user.username)
     
     return redirect(url_for('profile.login'))
+
+@bp.route('/manage_profile', methods=['GET', 'POST'])
+def manage_profile():
+    user = User.search_user_id(current_user.id)
+
+    if user == None:
+        flash('You must be logged in to update your profile','error')
+        return redirect(url_for('main.index'))
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        
+        return redirect(url_for('profile.home'))
+    return render_template('profile/manage_profile.html', user=user)

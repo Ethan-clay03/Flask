@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <div class="mt-5">
+        <h1 class="display-4">User Profile</h1>
+        <div>
+            <button class="btn btn-info mb-3" id="editButton" onclick="enableEditing()">
+                <i class="fas fa-wrench"></i> Edit
+            </button>
+            <form id="updateForm" action="{{ url_for('profile.manage_profile') }}" method="post" onsubmit="return showModal()">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" disabled required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" disabled required>
+                </div>
+                <button type="submit" class="btn btn-primary" disabled>Update Info</button>
+            </form>
+            <a href="{{ url_for('profile.password_reset_process') }}" class="btn btn-warning"><i class="fas fa-key"></i> Reset Password</a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">Confirm Update</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Type "CONFIRM" to proceed with the update.</p>
+                <input type="text" class="form-control" id="confirmInput" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitForm()">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function enableEditing() {
+        document.getElementById('username').disabled = false;
+        document.getElementById('email').disabled = false;
+        document.querySelector('button[type="submit"]').disabled = false;
+    }
+
+    function showModal() {
+        $('#confirmModal').modal('show');
+        return false;
+    }
+
+    function submitForm() {
+        var confirmInput = document.getElementById('confirmInput').value;
+        if (confirmInput === 'CONFIRM') {
+            document.getElementById('updateForm').submit();
+        } else {
+            alert('Please type "CONFIRM" to proceed.');
+        }
+    }
+</script>
+{% endblock %}

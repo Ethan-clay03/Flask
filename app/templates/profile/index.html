@@ -1,7 +1,30 @@
 {% extends 'base.html' %}
 {% block content %}
-<div>
-    <p>Welcome {{username}}!</p>
-    
+<div class="container">
+    <div class="jumbotron mt-5">
+        <h1 class="display-4">Hello, {{username.capitalize()}}!</h1>
+        <p class="lead">Welcome to your Horizon Travels dashboard. Your next travel date is on the horizon!</p>
+        <hr class="my-4">
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Manage Bookings</h5>
+                    <p class="card-text">Easily view and update your bookings.</p>
+                    <a href="{{ url_for('profile.manage_bookings') }}" class="btn btn-primary">Go to Bookings</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Update Personal Information</h5>
+                    <p class="card-text">Keep your personal details up to date.</p>
+                    <a href="{{ url_for('profile.manage_profile') }}" class="btn btn-secondary">Update Info</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

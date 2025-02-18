@@ -4,7 +4,7 @@ from flask_principal import Identity, identity_changed
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 from app.profile import bp
-from app.models import User
+from app.models import User, Bookings, Listings
 from app.logger import auth_logger
 from app import db, permission_required, user_permission
 
@@ -207,6 +207,10 @@ def password_reset_from_profile():
 @bp.route('/password-reset/reset-password', methods=['POST'])
 def password_reset_process():
     email = session.get('password-reset-email')
+    
+    if email == None:
+        email = current_user.email
+        
     password1 = request.form.get('password-1')
     password2 = request.form.get('password-2')
     
@@ -230,8 +234,11 @@ def index():
 @bp.route('/manage_bookings')
 def manage_bookings():
     if current_user.is_authenticated:
-        return render_template('profile/manage_bookings.html', username=current_user.username)
+        bookings = Bookings.get_user_bookings(current_user.id)
+        locations = Listings.get_all_locations(True)
+        return render_template('profile/manage_bookings.html', username=current_user.username, bookings=bookings, locations=locations)
     
+    flash('You must be logged in to view your current bookings', 'error')
     return redirect(url_for('profile.login'))
 
 @bp.route('/manage_profile', methods=['GET', 'POST'])
@@ -242,8 +249,32 @@ def manage_profile():
         flash('You must be logged in to update your profile','error')
         return redirect(url_for('main.index'))
     if request.method == 'POST':
-        name = request.form['name']
+        username = request.form['username']
         email = request.form['email']
         
-        return redirect(url_for('profile.home'))
+        User.update_user_details(user.id, username, email)
+        
+        flash('Successfully updated profile details', 'success')
+        return redirect(url_for('profile.manage_profile'))
     return render_template('profile/manage_profile.html', user=user)
+
+
+@bp.route('/cancel_booking', methods=['POST'])
+@permission_required(user_permission)
+def cancel_booking():
+    data = request.get_json()
+    booking_id = data.get('booking_id')
+    if not booking_id:
+        return jsonify({'error': 'Missing booking_id'}), 400
+    
+    success = Bookings.cancel_booking(booking_id)
+    if success:
+        return jsonify({'message': 'Booking cancelled successfully'}), 200
+    else:
+        return jsonify({'error': 'Failed to cancel booking'}), 400
+
+
+@bp.route('/manage_bookings/view/<int:id>')
+def manage_profile_view_booking(id):
+
+    return render_template('profile/view_booking.html')

@@ -1,7 +1,232 @@
 {% extends 'base.html' %}
 {% block content %}
-<div>
-    <p>Welcome {{username}}, manage bookings here!</p>
+<div class="container my-4">
+    <div class="d-flex justify-content-between mb-3">
+        <h2>Manage Bookings</h2>
+        <div>    
+            <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="fa-solid fa-filter"></i> Filter
+            </button>
+        </div>
+    </div>
     
+    <div class="table-container">
+        <table id="manage_bookings" class="table table-striped table-bordered display hover" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Booking Date</th>
+                    <th>Departure Date</th>
+                    <th>Departure Location</th>
+                    <th>Destination Location</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td>{{ booking.id }}</td>
+                    <td>{{ booking.booking_date }}</td>
+                    <td>{{ booking.departure_date }}</td>
+                    <td>{{ booking.departure_location }}</td>
+                    <td>{{ booking.destination_location }}</td>
+                    <td class="dt-center">
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                Actions
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item edit-btn" href="#">View</a>
+                                <a class="dropdown-item delete-btn" href="#">Cancel Booking</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- Cancel booking modal -->
+    <div class="modal fade" id="confirm_booking_deletion" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirm_booking_deletion">Confirm Cancellation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Type 'CONFIRM' to cancel your booking:</p>
+                    <input type="text" id="confirmation_input" class="form-control">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="confirm_deletion_button">Cancel Booking</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Filter modal -->
+    <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="filterModalLabel"><i class="fa-solid fa-filter"></i> Filter Options</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="filter-form">
+                        <div class="mb-3">
+                            <label for="depart_location" class="form-label">Depart Location:</label>
+                            <select class="form-control select2-multiple" id="depart_location" name="depart_location[]" multiple="multiple">
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="destination_location" class="form-label">Destination Location:</label>
+                            <select class="form-control select2-multiple" id="destination_location" name="destination_location[]" multiple="multiple">
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="depart_date" class="form-label">Depart Date:</label>
+                            <input type="date" class="form-control" id="depart_date" name="depart_date">
+                        </div>
+                        <div class="mb-3">
+                            <label for="booking_date" class="form-label">Booking Date:</label>
+                            <input type="date" class="form-control" id="booking_date" name="booking_date">
+                        </div>                                  
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="apply-filters">Apply Filters</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    @media (max-width: 800px) {
+        .table-container {
+            padding: 0 10px;
+        }
+    }
+
+    .dataTables_wrapper {
+        width: 100%;
+    }
+
+    table.dataTable.no-footer {
+        margin-bottom: 30px;
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        $('.select2-multiple').select2({
+            placeholder: "Select locations",
+            width: '100%'
+        });
+
+        $('.select2-dropdown').select2({
+            placeholder: "Select a date",
+            width: '100%',
+            minimumResultsForSearch: Infinity
+        });
+
+        // Populate location options, TO UPDATE WITH LIVE LOCATIONS
+        const locations = JSON.parse('{{ locations|tojson|safe }}');
+        locations.forEach(location => {
+            $('#depart_location').append(new Option(location, location));
+            $('#destination_location').append(new Option(location, location));
+        });
+
+        // Load table
+        const table = $('#manage_bookings').DataTable({
+            pageLength: 10,
+            lengthChange: false,
+            searching: false,
+            ordering: false,
+            ajax: {
+                url: "{{ url_for('bookings.get_user_bookings') }}",
+                dataSrc: '',
+                data: function(d) {
+                    d.depart_location = $('#depart_location').val() ? $('#depart_location').val().join(',') : '';
+                    d.destination_location = $('#destination_location').val() ? $('#destination_location').val().join(',') : '';
+                    d.depart_date = $('#depart_date').val();
+                    d.booking_date = $('#booking_date').val();
+                }
+            },
+            columns: [
+                { data: 'id', visible: false }, // Hidden id column
+                { data: 'booking_date' },
+                { data: 'depart_date' },
+                { data: 'depart_location' },
+                { data: 'destination_location' },
+                {
+                    data: null,
+                    className: "dt-center",
+                    defaultContent: `
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                Actions
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item edit-btn" href="#">View</a>
+                                <a class="dropdown-item delete-btn" href="#">Cancel Booking</a>
+                            </div>
+                        </div>`
+                }
+            ],
+            language: {
+                emptyTable: "No bookings could be found."
+            },
+            createdRow: function(row, data, dataIndex) {
+                $(row).find('.edit-btn').attr('data-id', data.id);
+                $(row).find('.delete-btn').attr('data-id', data.id);
+            }
+        });
+
+        $('#apply-filters').on('click', function() {
+            table.ajax.reload();
+            $('#filterModal').modal('hide');
+        });
+
+        $('#manage_bookings tbody').on('click', '.edit-btn', function() {
+            const id = $(this).data('id');
+            window.location.href = `manage_bookings/view/${id}`;
+        });
+
+        let delete_booking_id;
+        $('#manage_bookings tbody').on('click', '.delete-btn', function() {
+            delete_booking_id = $(this).data('id');
+            $('#confirm_booking_deletion').modal('show');
+        });
+
+        $('#confirm_deletion_button').on('click', function() {
+            const confirmationInput = $('#confirmation_input').val();
+            if (confirmationInput === 'CONFIRM') {
+                $.ajax({
+                    url: `{{ url_for('profile.cancel_booking') }}`,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ booking_id: delete_booking_id }),
+                    success: function(response) {
+                        $('#confirm_booking_deletion').modal('hide');
+                        table.ajax.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        alert('An error occurred while cancelling the booking.');
+                    }
+                });
+            } else {
+                alert("Please type 'CONFIRM' to proceed.");
+            }
+        });
+    });
+</script>
 {% endblock %}

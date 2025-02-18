@@ -375,3 +375,41 @@ def generate_ticket(id):
     pdf = create_plane_ticket(booking, listing)
     
     return send_file(pdf, as_attachment=True, download_name='plane_ticket.pdf')
+
+
+@bp.route('/get_user_bookings', methods=['GET'])
+@permission_required(user_permission)
+def get_user_bookings():
+    query = db.session.query(Bookings).join(Listings)
+
+    depart_location = request.args.get('depart_location')
+    destination_location = request.args.get('destination_location')
+    booking_date = request.args.get('booking_date')
+    depart_date = request.args.get('depart_date')
+
+    # Only get non-cancelled bookings
+    query = query.filter(Bookings.cancelled == 0)
+    if depart_location:
+        depart_locations = depart_location.split(',')
+        query = query.filter(Listings.depart_location.in_(depart_locations))
+    if destination_location:
+        destination_locations = destination_location.split(',')
+        query = query.filter(Listings.destination_location.in_(destination_locations))
+    if booking_date:
+        query = query.filter(Bookings.booking_date == booking_date)
+    if depart_date:
+        query = query.filter(Bookings.depart_date == depart_date)
+
+    filtered_data = query.all()
+    result = [
+        {
+            'id': booking.id,
+            'depart_location': booking.listing.depart_location,
+            'booking_date': booking.booking_date.strftime("%a, %d %b %Y"),
+            'destination_location': booking.listing.destination_location,
+            'depart_date': booking.depart_date.strftime("%a, %d %b %Y"),
+        } for booking in filtered_data
+    ]
+    
+    return jsonify(result)
+

@@ -72,3 +72,16 @@ class User(UserMixin, db.Model):
             return True
         
         return False
+    
+    @classmethod
+    def update_user_details(cls, user_id, username, email):
+        # Ensure the user exists
+        user = cls.search_user_id(user_id)
+
+        if user:
+            user.username = username
+            user.email = email
+            db.session.commit()
+            return True
+        
+        return False

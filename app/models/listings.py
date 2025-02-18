@@ -6,15 +6,16 @@ from sqlalchemy.sql import text
 class Listings(db.Model):
     __tablename__ = 'listings'
 
-    id = db.Column(db.Integer(), nullable=False, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     depart_location = db.Column(db.String(255), nullable=False)
-    depart_time = db.Column(Time, nullable=False)
+    depart_time = db.Column(db.Time, nullable=False)
     destination_location = db.Column(db.String(255), nullable=False)
-    destination_time = db.Column(Time, nullable=False)
-    economy_fair_cost = db.Column(db.Float(), nullable=False) 
-    business_fair_cost = db.Column(db.Float(), nullable=False) 
+    destination_time = db.Column(db.Time, nullable=False)
+    economy_fair_cost = db.Column(db.Float, nullable=False)
+    business_fair_cost = db.Column(db.Float, nullable=False)
     transport_type = db.Column(db.String(255), nullable=False)
     listing_images = relationship("ListingImages", back_populates="listing", cascade="all, delete-orphan")
+    bookings = relationship('Bookings', back_populates='listing', cascade="all, delete-orphan")
 
     @classmethod
     def get_all_listings(cls):

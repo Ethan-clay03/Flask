@@ -1,28 +1,44 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="column is-4 is-offset-4">
-    <div id="login-box" class="form_box_30" style="margin-top: 30px;">
-        <div class="profile_form_background">
-            <h2 class="form_header">Login</h2>
-            <form method="POST" action="{{ url_for('profile.login_post') }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="mb-3">
-                    <label class="form-label" autofocus="">Username/Email</label>
-                    <input type="text" class="form-control" name="username">
+<script src="{{ url_for('static', filename='generic.js') }}"></script>
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Booking Details</h2>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title text-center mb-4">Summary</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Departure Date:</strong> {{ booking.depart_date }}</p>
+                            <p><strong>Departure Location:</strong> {{ booking.listing.depart_location }}</p>
+                            <p><strong>Departure Time:</strong> {{ booking.listing.depart_time }}</p>
+                            <p><strong>Seat Type:</strong> {{ booking.seat_type.capitalize() }}</p>
+                            <p><strong>Total Cost:</strong> £{{ booking.amount_paid }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Destination Location:</strong> {{ booking.listing.destination_location }}</p>
+                            <p><strong>Destination Time:</strong> {{ booking.listing.destination_time }}</p>
+                            <p><strong>Number of Seats:</strong> {{ booking.num_seats }}</p>
+                            <p><strong>Cost Per Person:</strong> £{{ booking.amount_paid / booking.num_seats }}</p>
+                            <p><strong>Cancelled:</strong> {{ 'Yes' if booking.cancelled else 'No' }}</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label for="exampleInputPassword1" class="form-label">Password</label>
-                    <input type="password" class="form-control" name="password">
+            </div>
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="card-title mb-4">Re-Download Booking Details</h3>
+                    <div class="d-flex justify-content-center">
+                        <form action="{{ url_for('bookings.generate_receipt', id=booking.id) }}" method="get" class="d-inline">
+                            <button type="submit" class="btn btn-success btn-lg mr-2" style="margin-right: 25px">Download Receipt</button>
+                        </form>
+                        <form action="{{ url_for('bookings.generate_ticket', id=booking.id) }}" method="get" class="d-inline">
+                            <button type="submit" class="btn btn-primary btn-lg">Download Plane Ticket</button>
+                        </form>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <a class="clear-hyperlink" href="{{ url_for('profile.password_reset') }}">Forgot Password?</a>
-                </div>
-                <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                    <label class="form-check-label" for="remember">Remember me</label>
-                </div>
-                <button type="submit" class="btn btn-primary">Log In</button>
-            </form>
+            </div>
         </div>
     </div>
 </div>

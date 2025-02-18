@@ -4,6 +4,7 @@ from flask_principal import Identity, identity_changed
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 from app.profile import bp
+from app.main.utils import pretty_time
 from app.models import User, Bookings, Listings
 from app.logger import auth_logger
 from app import db, permission_required, user_permission
@@ -277,4 +278,7 @@ def cancel_booking():
 @bp.route('/manage_bookings/view/<int:id>')
 def manage_profile_view_booking(id):
 
-    return render_template('profile/view_booking.html')
+    booking = Bookings.search_booking(id)
+    booking.listing.destination_time = pretty_time(booking.listing.destination_time)
+    booking.listing.depart_time = pretty_time(booking.listing.depart_time)
+    return render_template('profile/view_booking.html', booking=booking)

@@ -4,37 +4,42 @@
     <div id="discountBanner" class="alert alert-success" role="alert" style="display: {% if discount > 0 %}block{% else %}none{% endif %};">
         Special Offer! Get <span id="discountPercent">{{ discount }}</span>% off on your booking as you are booking <span id="daysAway">{{ days_away }}</span> days away!
     </div>
-    <div class="date-container">
-        <div class="col-md-6 text-start mb-3 d-flex align-items-center flex-md-nowrap flex-wrap">
-            <label class="form-label me-2">Departure Date:</label>
-            <div class="col-md-6">
-                <input type="date" class="form-control" id="departDate" name="departDate" required value="{{ selected_date or today }}">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="date-container mb-3 d-flex align-items-center flex-md-nowrap flex-wrap">
+                <label class="form-label me-2">Departure Date:</label>
+                <div class="col-md-6">
+                    <input type="date" class="form-control" id="departDate" name="departDate" required value="{{ selected_date or today }}">
+                </div>
+                <button type="button" class="btn btn-warning ms-2" id="resetDate">
+                    <i class="fa-solid fa-rotate-right"></i> Reset Date
+                </button>
             </div>
-            <button type="button" class="btn btn-warning ms-2" id="resetDate">
-                <i class="fa-solid fa-rotate-right"></i> Reset Date
-            </button>
+            <div class="mb-3 d-flex align-items-center flex-md-nowrap flex-wrap">
+                <label class="form-label me-2">Number of Seats:</label>
+                <div class="col-md-6">
+                    <select class="form-select" id="numSeats" name="numSeats">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-3 d-flex align-items-center flex-md-nowrap flex-wrap">
+                <label class="form-label me-2">Seat Type:</label>
+                <div class="col-md-6">
+                    <select class="form-select" id="seatType" name="seatType">
+                        <option value="economy" {% if seat_type == 'economy' %}selected{% endif %}>Economy</option>
+                        <option value="business" {% if seat_type == 'business' %}selected{% endif %}>Business</option>
+                    </select>
+                </div>
+            </div>
         </div>
-        <div class="col-md-6 text-start mb-3 d-flex align-items-center flex-md-nowrap flex-wrap">
-            <label class="form-label me-2">Number of Seats:</label>
-            <div class="col-md-6">
-                <select class="form-select" id="numSeats" name="numSeats">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                </select>
-            </div>
+        <div class="col-md-6 d-flex justify-content-end">
+            <img src="{{ url_for('main.upload_file', filename=main_image_url) }}" class="card-img-top" style="max-width: 200px;" loading="lazy" alt="Main Image">
         </div>
-        <div class="col-md-6 text-start mb-3 d-flex align-items-center flex-md-nowrap flex-wrap">
-            <label class="form-label me-2">Seat Type:</label>
-            <div class="col-md-6">
-                <select class="form-select" id="seatType" name="seatType">
-                    <option value="economy" {% if seat_type == 'economy' %}selected{% endif %}>Economy</option>
-                    <option value="business" {% if seat_type == 'business' %}selected{% endif %}>Business</option>
-                </select>
-            </div>
-        </div>        
     </div>
     <h2 class="mb-4" style="text-align: center; margin-top: 40px;">Booking Details</h2>
     <div class="row">
@@ -43,7 +48,7 @@
                 <div class="card-body">
                     <h2 class="card-title">Departure Information</h2>
                     <p><strong>Location:</strong> {{ listing.depart_location }}</p>
-                    <p><strong>Time:</strong> {{ listing.depart_time }}</p>
+                    <p><strong>Time:</strong> {{ depart_time }}</p>
                 </div>
             </div>
         </div>
@@ -52,7 +57,7 @@
                 <div class="card-body">
                     <h2 class="card-title">Destination Information</h2>
                     <p><strong>Location:</strong> {{ listing.destination_location }}</p>
-                    <p><strong>Time:</strong> {{ listing.destination_time }}</p>
+                    <p><strong>Time:</strong> {{ destination_time }}</p>
                 </div>
             </div>
         </div>

@@ -179,8 +179,8 @@ def listing(id):
     session['listing']['economy_fair_cost'] = listing.economy_fair_cost
     session['listing']['business_fair_cost'] = listing.business_fair_cost
 
-    listing.depart_time = pretty_time(listing.depart_time)
-    listing.destination_time = pretty_time(listing.destination_time)
+    depart_time = pretty_time(listing.depart_time)
+    destination_time = pretty_time(listing.destination_time)
     filter_data = session.pop('filter_data', None)
 
     selected_date = filter_data['date'] if filter_data and 'date' in filter_data else None
@@ -192,6 +192,13 @@ def listing(id):
         base_price = listing.business_fair_cost
     else:
         base_price = listing.economy_fair_cost
+
+    main_image_url = None
+    for image in listing.listing_images:
+        if image.main_image == 1:
+            main_image_url = image.image_location
+            break
+
 
     discounted_price = base_price * (1 - discount / 100)
     total_cost = discounted_price
@@ -205,7 +212,10 @@ def listing(id):
         days_away=days_away,
         base_price=base_price,
         discounted_price=discounted_price,
-        total_cost=total_cost
+        total_cost=total_cost,
+        depart_time = depart_time, 
+        destination_time = destination_time,
+        main_image_url = main_image_url
     )
 
 # This route should be used after show_listing if used internally as this clears the ajax parameters before redirecting the user

@@ -29,14 +29,22 @@
             <div class="card shadow-sm">
                 <div class="card-body text-center">
                     <h3 class="card-title mb-4">Re-Download Booking Details</h3>
-                    <div class="d-flex justify-content-center">
-                        <form action="{{ url_for('bookings.generate_receipt', id=booking.id) }}" method="get" class="d-inline">
-                            <button type="submit" class="btn btn-success btn-lg mr-2" style="margin-right: 25px">Download Receipt</button>
-                        </form>
-                        <form action="{{ url_for('bookings.generate_ticket', id=booking.id) }}" method="get" class="d-inline">
-                            <button type="submit" class="btn btn-primary btn-lg">Download Plane Ticket</button>
-                        </form>
-                    </div>
+                    {% if booking.cancelled %}
+                        <div class="alert alert-danger" role="alert">
+                            This booking has been cancelled. Download options are no longer available
+                        </div>
+                        <button type="button" class="btn btn-success btn-lg mr-2" disabled>Download Receipt</button>
+                        <button type="button" class="btn btn-primary btn-lg" disabled>Download Plane Ticket</button>
+                    {% else %}
+                        <div class="d-flex justify-content-center">
+                            <form action="{{ url_for('bookings.generate_receipt', id=booking.id) }}" method="get" class="d-inline">
+                                <button type="submit" class="btn btn-success btn-lg mr-2" style="margin-right: 25px">Download Receipt</button>
+                            </form>
+                            <form action="{{ url_for('bookings.generate_ticket', id=booking.id) }}" method="get" class="d-inline">
+                                <button type="submit" class="btn btn-primary btn-lg">Download Plane Ticket</button>
+                            </form>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

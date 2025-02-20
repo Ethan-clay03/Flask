@@ -1,11 +1,9 @@
 from flask import render_template, redirect, url_for, request, jsonify, flash
 from app import db
 from app import admin_permission, permission_required, super_admin_permission
-from app.models import Listings, ListingImages, User
+from app.models import Listings, ListingImages, User, Role
 from app.admin import bp
 from app.main.utils import generate_time_options
-from sqlalchemy.sql import text
-
 
 @bp.route('/home')
 @permission_required(admin_permission)
@@ -47,10 +45,11 @@ def edit_booking(id):
 @permission_required(super_admin_permission)
 def edit_user(id):
     user = User.search_user_id(id)
-                                                             
+    roles = Role.get_all_roles()                             
     return render_template(
         'admin/edit_user.html', 
-        user=user
+        user=user,
+        roles=roles
     )
 
 @bp.route('/manage_users')
@@ -298,20 +297,34 @@ def delete_image(image_id):
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@permission_required(super_admin_permission)
+@bp.route('/update_user_field', methods=['POST'])
+def update_user_field():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    field = data.get('field')
+    value = data.get('value')
+    user = User.query.get(user_id) 
 
-@bp.route('/init/database', methods=['GET'])
-def check_database_exists():
-    try:
-        if Listings.check_table_exists():
-            flash ("Database already exists, 'error")
+    if user:
+        if field == 'userName':
+            user.username = value
+        elif field == 'userEmail':
+            user.email = value
+        elif field == 'userRole':
+            role = Role.query.get(value)
+            if role:
+                user.role_id = role.id
+            else:
+                return jsonify(success=False, message="Invalid role"), 400
         else:
-            raise Exception('Schema exists but database does not')
-    except:
-        with open('sql-setup/init.sql', 'r') as file:
-            sql_commands = file.read().split(';')
-            for command in sql_commands:
-                if command.strip():
-                    db.session.execute(text(command))
-        
-        db.session.commit()
-        flash ("Database initialised", 'success')
+            return jsonify(success=False, message="Invalid field"), 400
+
+        try:
+            db.session.commit()
+            return jsonify(success=True)
+        except Exception as e:
+            db.session.rollback()
+            return jsonify(success=False, message=str(e)), 500
+    else:
+        return jsonify(success=False, message="User not found"), 404

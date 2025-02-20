@@ -6,6 +6,15 @@ html, body {
 }
 
 /** FOOTER CSS */
+.footer_column a {
+    color: inherit; 
+    text-decoration: none;  
+    font-family: inherit; 
+}
+
+.footer_column a:hover {
+    text-decoration: underline; 
+}
 
 .footer {
     text-align: center;
@@ -124,11 +133,6 @@ Form styling options
     background: #244855;
     padding: 50px;
     color: #FBE9D0; 
-}
-
-.form-check-input:checked {
-    color: #FBE9D0; 
-    background: #FBE9D0;
 }
 
 .form_header {

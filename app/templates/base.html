@@ -119,14 +119,15 @@
             <div class="footer">
                 <div class="footer_row">
                     <div class="footer_column">
-                        <div>About Us</div>
-                        <div>Contact Us</div>
+                        <div><a href="{{ url_for('profile.index') }}">Profile</a></div>
+                        <div><a href="{{ url_for('main.about_us') }}">About Us</a></div>
+                        <div><a href="{{ url_for('main.contact_us') }}">Contact Us</div>
                     </div>
                     <div class="footer_column">
-                        <a>About Us</a>
-                        <a>Contact Us</a>
+                        <div><a href="{{ url_for('main.faq') }}">FAQ</a></div>
+                        <div><a href="{{ url_for('main.privacy_policy') }}">Privacy Policy</a></div>
+                        <div><a href="{{ url_for('main.tos') }}">Terms of Service</a></div>
                     </div>
-                    <div class="footer_column"><a>Login</a></div>
                 </div>
                 <div class="footer_row">
                     <div class="copyright">
@@ -134,7 +135,7 @@
                     </div>
                 </div>
             </div>
-        </footer>
+        </footer>             
         {% endblock %}
     </div> 
 </body>

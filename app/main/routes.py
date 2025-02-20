@@ -52,3 +52,24 @@ def log_message():
         return jsonify({'success': True, 'message': 'Log message recorded'})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+    
+
+@bp.route('/about_us')
+def about_us():
+    return render_template('main/about_us.html')
+
+@bp.route('/faq')
+def faq():
+    return render_template('main/faq.html')
+
+@bp.route('/privacy_policy')
+def privacy_policy():
+    return render_template('main/privacy_policy.html')
+
+@bp.route('/tos')
+def tos():
+    return render_template('main/tos.html')
+
+@bp.route('/contact_us')
+def contact_us():
+    return render_template('main/contact_us.html')

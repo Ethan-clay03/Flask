@@ -8,3 +8,7 @@ class Role(RoleMixin, db.Model):
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
 
+    @classmethod
+    def get_all_roles(cls):
+        roles = cls.query.all()
+        return [{'id': role.id, 'name': role.name} for role in roles]

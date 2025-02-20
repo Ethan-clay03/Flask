@@ -1,4 +1,4 @@
-from flask import Flask, g, abort, current_app, request, session, redirect, url_for
+from flask import Flask, g, abort, request, session, redirect, url_for
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -10,9 +10,7 @@ from app.logger import auth_logger, error_logger
 from functools import wraps
 import os
 import pymysql
-from sqlalchemy.sql import text
 
-# Initialize extensions
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
@@ -20,15 +18,15 @@ csrf = CSRFProtect()
 principal = Principal()
 
 def permission_required(permission):
-    def decorator(f):
+    def check_role(f):
         @wraps(f)
-        def decorated_function(*args, **kwargs):
+        def check_permission(*args, **kwargs):
             if not permission.can():
                 auth_logger.debug(f'Permission denied for {current_user} attempting to access {request.endpoint}.')
                 abort(403)
             return f(*args, **kwargs)
-        return decorated_function
-    return decorator
+        return check_permission
+    return check_role
 
 super_admin_permission = Permission(RoleNeed('super-admin'))
 admin_permission = Permission(RoleNeed('admin'))
@@ -159,17 +157,17 @@ def create_app(config_class=Config):
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
         return response
 
-    # @app.errorhandler(Exception)
-    # def handle_exception(e):
-    #     app.logger.error(f"Unhandled exception: {e}")
-    #     session['error_message'] = str(e)
-    #     return redirect(url_for('errors.quandary'))
-
-    @app.errorhandler(403)
+    @app.errorhandler(Exception)
     def handle_exception(e):
         app.logger.error(f"Unhandled exception: {e}")
         session['error_message'] = str(e)
         return redirect(url_for('errors.quandary'))
+
+    @app.errorhandler(403)
+    def handle_exception(e):
+        app.logger.debug(f"Unauthorized: {e}")
+        session['error_message'] = str(e)
+        return redirect(url_for('errors.no_permission'))
 
     @app.before_request
     def before_request():

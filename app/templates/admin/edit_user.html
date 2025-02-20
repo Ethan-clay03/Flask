@@ -1,89 +1,147 @@
 {% extends 'base.html' %}
 {% block content %}
+<head>
+  <script src="{{ url_for('static', filename='generic.js') }}"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
 <div class="container mt-5">
-    <div class="card mb-4">
-        <div class="card-body">
-            <h2 class="card-title">User Information</h2>
-            <p><strong>User Name:</strong> 
-                <span id="userName">{{user.username}}</span> 
-                <button class="btn btn-primary" onclick="editField('userName', this)">Update</button>
-            </p>
-            <p><strong>Email:</strong> 
-                <span id="userEmail">{{user.email}}</span> 
-                <button class="btn btn-primary" onclick="editField('userEmail', this)">Update</button>
-            </p>
-            <p><strong>Role:</strong> 
-                <span id="userRole">{{user.role.name}}</span> 
-                <button class="btn btn-primary" onclick="editField('userRole', this)">Update</button>
-            </p>
-        </div>
+  <div class="card mb-4">
+    <div class="card-body">
+      <h2 class="card-title">User Information</h2>
+      <input type="hidden" id="userId" value="{{ user.id }}">
+      <p><strong>User Name:</strong> <span id="userName">{{ user.username }}</span>
+        <button class="btn btn-primary" onclick="editField('userName', this)">Update</button>
+      </p>
+      <p><strong>Email:</strong> <span id="userEmail">{{ user.email }}</span>
+        <button class="btn btn-primary" onclick="editField('userEmail', this)">Update</button>
+      </p>
+      <p><strong>Role:</strong> <span id="userRole">{{ user.role.name }}</span>
+        <button class="btn btn-primary" onclick="editField('userRole', this)">Update</button>
+      </p>
     </div>
+  </div>
 </div>
 <div class="text-center">
-    <button class="btn btn-secondary btn-lg">
-        Save Changes
-    </button>
+    <a class="btn btn-warning btn-lg" href="{{ url_for('admin.manage_users') }}">
+        <i class="fas fa-arrow-left"></i> Go Back
+    </a>
 </div>
-
 <style>
-    .input-container {
-        display: flex;
-        align-items: center;
-    }
-    .input-container input {
-        flex: 1;
-        max-width: 500px;
-    }
-    .input-container button {
-        margin-left: 10px;
-    }
+  .input-container {
+    display: flex;
+    align-items: center;
+  }
+  .input-container input, .input-container select {
+    flex: 1;
+    max-width: 500px;
+  }
+  .input-container button {
+    margin-left: 10px;
+  }
 </style>
-
 <script>
-function editField(fieldId, button) {
+  function editField(fieldId, button) {
     const field = document.getElementById(fieldId);
     const originalValue = field.textContent;
 
-    const input = document.createElement("input");
-    input.type = "text";
-    input.value = originalValue;
-    input.classList.add("form-control");
-    input.autofocus = true;
+    if (fieldId === 'userRole') {
+      const select = document.createElement("select");
+      select.classList.add("form-control");
+      const roles = JSON.parse('{{ roles|tojson|safe }}');
+      const currentRoleId = '{{ user.role_id }}';
+      roles.forEach(role => {
+        const option = document.createElement("option");
+        option.value = role.id;
+        option.textContent = role.name;
+        if (role.id == currentRoleId) {
+          option.selected = true;
+        }
+        select.appendChild(option);
+      });
+      const container = document.createElement("div");
+      container.classList.add("input-container");
+      container.appendChild(select);
+      field.parentNode.replaceChild(container, field);
 
-    const container = document.createElement("div");
-    container.classList.add("input-container");
-    container.appendChild(input);
+      select.onblur = function() {
+        if (!container.contains(select)) return;
+        saveField(select, fieldId, button);
+      };
+      button.innerText = 'Apply';
+      button.onclick = function() {
+        saveField(select, fieldId, button);
+      };
+      container.appendChild(button);
+    } else {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = originalValue;
+      input.classList.add("form-control");
+      input.autofocus = true;
 
-    field.parentNode.replaceChild(container, field);
+      const container = document.createElement("div");
+      container.classList.add("input-container");
+      container.appendChild(input);
+      field.parentNode.replaceChild(container, field);
 
-    input.onblur = function() {
+      input.onblur = function() {
         if (!container.contains(input)) return;
         saveField(input, fieldId, button);
-    };
-
-    button.innerText = 'Apply';
-    button.onclick = function() {
+      };
+      button.innerText = 'Apply';
+      button.onclick = function() {
         saveField(input, fieldId, button);
-    };
+      };
+      container.appendChild(button);
+    }
+  }
 
-    container.appendChild(button);
-}
-
-function saveField(input, fieldId, button) 
-{
-    const newValue = input.value;
-
+  function saveField(input, fieldId, button) {
+    let newValue;
+    if (fieldId === 'userRole') {
+      newValue = input.value; // Get the selected role ID
+      var newSpanText = input.options[input.selectedIndex].text; // Get the selected role name
+    } else {
+      newValue = input.value;
+      var newSpanText = newValue;
+    }
     const newSpan = document.createElement("span");
     newSpan.id = fieldId;
-    newSpan.textContent = newValue;
-
+    newSpan.textContent = newSpanText;
     const container = input.parentNode;
     container.parentNode.replaceChild(newSpan, container);
-
     button.innerText = 'Update';
     button.onclick = editField.bind(null, fieldId, button);
-
     newSpan.parentNode.appendChild(button);
-}
+    // Send update to the Flask route for validation and saving
+    updateUserField(fieldId, newValue);
+  }
+
+  function updateUserField(fieldId, newValue) {
+    const data = {
+      user_id: '{{ user.id }}',
+      field: fieldId,
+      value: newValue
+    };
+    fetch("{{ url_for('admin.update_user_field') }}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        'X-CSRFToken': '{{ csrf_token() }}'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (!data.success) {
+        alert('Error updating field: ' + data.message);
+        location.reload();
+      }
+    })
+    .catch(error => {
+      alert('Error updating field: ' + error);
+      location.reload();
+    });
+  }
 </script>
 {% endblock %}

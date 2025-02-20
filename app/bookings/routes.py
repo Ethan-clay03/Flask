@@ -386,7 +386,6 @@ def generate_ticket(id):
     
     return send_file(pdf, as_attachment=True, download_name='plane_ticket.pdf')
 
-
 @bp.route('/get_user_bookings', methods=['GET'])
 @permission_required(user_permission)
 def get_user_bookings():
@@ -396,9 +395,11 @@ def get_user_bookings():
     destination_location = request.args.get('destination_location')
     booking_date = request.args.get('booking_date')
     depart_date = request.args.get('depart_date')
+    exclude_cancelled = request.args.get('exclude_cancelled')
 
-    # Only get non-cancelled bookings
-    query = query.filter(Bookings.cancelled == 0)
+    if exclude_cancelled and exclude_cancelled.lower() == 'true':
+        query = query.filter(Bookings.cancelled == 0)
+
     if depart_location:
         depart_locations = depart_location.split(',')
         query = query.filter(Listings.depart_location.in_(depart_locations))
@@ -418,8 +419,8 @@ def get_user_bookings():
             'booking_date': booking.booking_date.strftime("%a, %d %b %Y"),
             'destination_location': booking.listing.destination_location,
             'depart_date': booking.depart_date.strftime("%a, %d %b %Y"),
+            'cancelled': 'Yes' if booking.cancelled else 'No'
         } for booking in filtered_data
     ]
     
     return jsonify(result)
-

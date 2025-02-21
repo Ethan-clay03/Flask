@@ -20,7 +20,7 @@
                     <th>Departure Location</th>
                     <th>Destination Location</th>
                     <th>Cancelled</th>
-                    <th>Actions</th>
+                    <th>View Booking</th>
                 </tr>
             </thead>
             <tbody>
@@ -33,39 +33,12 @@
                     <td>{{ booking.destination_location }}</td>
                     <td>{{ 'Yes' if booking.cancelled else 'No' }}</td>
                     <td class="dt-center">
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                                Actions
-                            </button>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item edit-btn" href="#">View</a>
-                                <a class="dropdown-item delete-btn" href="#">Cancel Booking</a>
-                            </div>
-                        </div>
+                        <a class="btn btn-secondary view-booking-btn" href="manage_bookings/view/{{ booking.id }}">View Booking</a>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-    </div>
-    <!-- Cancel booking modal -->
-    <div class="modal fade" id="confirm_booking_deletion" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirm_booking_deletion">Confirm Cancellation</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Type 'CONFIRM' to cancel your booking:</p>
-                    <input type="text" id="confirmation_input" class="form-control">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="confirm_deletion_button">Cancel Booking</button>
-                </div>
-            </div>
-        </div>
     </div>
     <!-- Filter modal -->
     <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
@@ -109,7 +82,6 @@
         </div>
     </div>
 </div>
-
 <style>
     .table-container {
         width: 100%;
@@ -144,7 +116,6 @@
             minimumResultsForSearch: Infinity
         });
 
-        // Populate location options, TO UPDATE WITH LIVE LOCATIONS
         const locations = JSON.parse('{{ locations|tojson|safe }}');
         locations.forEach(location => {
             $('#depart_location').append(new Option(location, location));
@@ -179,59 +150,21 @@
                     data: null,
                     className: "dt-center",
                     defaultContent: `
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                                Actions
-                            </button>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <a class="dropdown-item edit-btn" href="#">View</a>
-                                <a class="dropdown-item delete-btn" href="#">Cancel Booking</a>
-                            </div>
-                        </div>`
+                        <a class="btn btn-secondary view-booking-btn" href="#">View Booking</a>
+                    `
                 }
             ],
             language: {
                 emptyTable: "No bookings could be found."
             },
             createdRow: function(row, data, dataIndex) {
-                $(row).find('.edit-btn').attr('data-id', data.id);
-                $(row).find('.delete-btn').attr('data-id', data.id);
+                $(row).find('.view-booking-btn').attr('href', `manage_bookings/view/${data.id}`);
             }
         });
 
         $('#apply-filters').on('click', function() {
             table.ajax.reload();
             $('#filterModal').modal('hide');
-        });
-
-        $('#manage_bookings tbody').on('click', '.edit-btn', function() {
-            const id = $(this).data('id');
-            window.location.href = `manage_bookings/view/${id}`;
-        });
-
-        let delete_booking_id;
-        $('#manage_bookings tbody').on('click', '.delete-btn', function() {
-            delete_booking_id = $(this).data('id');
-            $('#confirm_booking_deletion').modal('show');
-        });
-
-        $('#confirm_deletion_button').on('click', function() {
-            const confirmationInput = $('#confirmation_input').val();
-            if (confirmationInput === 'CONFIRM') {
-                $.ajax({
-                    url: `{{ url_for('profile.cancel_booking') }}`,
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ booking_id: delete_booking_id }),
-                    success: function(response) {
-                        $('#confirm_booking_deletion').modal('hide');
-                        table.ajax.reload();
-                    },
-                    error: function(xhr, status, error) {
-                        alert('An error occurred while cancelling the booking.');
-                    }
-                });
-            }
         });
     });
 </script>

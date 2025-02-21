@@ -155,7 +155,6 @@
             $('#arrive_after_time').append(new Option(time, time));
         });
 
-        // Populate location options, TO UPDATE WITH LIVE LOCATIONS
         const locations = JSON.parse('{{ locations|tojson|safe }}');
         locations.forEach(location => {
             $('#depart_location').append(new Option(location, location));

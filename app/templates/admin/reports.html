@@ -6,19 +6,43 @@
     <title>Reporting</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            margin-bottom: 30px; /* Margin at the bottom to prevent overlap */
+        }
+        .card h3 {
+            text-align: center;
+        }
+        .chart-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1 class="text-center my-4">Reporting</h1>
-
-        <form method="get" action="{{ url_for('admin.reports') }}" class="form-inline mb-4">
+        <form method="get" action="{{ url_for('admin.reports') }}" class="form mb-4">
             <div class="form-group mx-sm-3 mb-2">
-                <label for="days" class="sr-only">Show results for the last</label>
-                <input type="number" class="form-control" id="days" name="days" value="{{ days }}" min="1" placeholder="Days">
+                <div class="row">
+                    <div class="col-12">
+                        <label for="days" class="form-label">Show results for the last {{ days }} days</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <input type="number" class="form-control" id="days" name="days" value="{{ days }}" min="1" placeholder="Days">
+                    </div>
+                    <div class="col-1">
+                        <button type="submit" class="btn btn-primary mb-2">Update</button>
+                    </div>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary mb-2">Update</button>
-        </form>
-
+        </form>             
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="card text-white bg-info mb-3">
@@ -41,26 +65,34 @@
         <div class="row">
             <div class="col-md-6 mb-4">
                 <h3>Destination Locations</h3>
-                <canvas id="destinationChart" height="200"></canvas>
+                <div class="chart-container chart-center">
+                    <canvas id="destinationChart"></canvas>
+                </div>
             </div>
             <div class="col-md-6 mb-4">
                 <h3>User Count</h3>
-                <canvas id="roleCountChart" height="200"></canvas>
+                <div class="chart-container chart-center">
+                    <canvas id="roleCountChart"></canvas>
+                </div>
             </div>
         </div>
         <div class="row">
             <div class="col-md-6 mb-4">
                 <h3>Number of Seats Booked Per Day</h3>
-                <canvas id="seatsBookedChart" height="200"></canvas>
+                <div class="chart-container chart-center">
+                    <canvas id="seatsBookedChart"></canvas>
+                </div>
             </div>
             <div class="col-md-6 mb-4">
-                <h3>Depart Dates</h3>
-                <canvas id="departDateChart" height="200"></canvas>
+                <h3>Departure Dates</h3>
+                <div class="chart-container chart-center">
+                    <canvas id="departDateChart"></canvas>
+                </div>
             </div>
         </div>
-        </div>
+    </div>
     <script>
-        // Destination Locations Pie Chart
+        // Destination Location
         var destinationData = {
             labels: {{ destinations|map(attribute=0)|list|tojson }},
             datasets: [{
@@ -83,10 +115,14 @@
         var ctx = document.getElementById('destinationChart').getContext('2d');
         var destinationChart = new Chart(ctx, {
             type: 'pie',
-            data: destinationData
+            data: destinationData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
         });
 
-        // User Role Count Bar Chart
+        // User Count
         var roleCountData = {
             labels: {{ user_counts|map(attribute=0)|list|tojson }},
             datasets: [{
@@ -103,6 +139,8 @@
             type: 'bar',
             data: roleCountData,
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true
@@ -111,7 +149,7 @@
             }
         });
 
-        // Number of Seats Booked Per Day Line Chart
+        // Seats booked per day
         var seatsBookedData = {
             labels: {{ seats_booked_per_day|map(attribute=0)|list|tojson }},
             datasets: [{
@@ -128,6 +166,8 @@
             type: 'bar',
             data: seatsBookedData,
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true
@@ -136,7 +176,7 @@
             }
         });
 
-        // Depart Dates Line Chart
+        // Departure dates
         var departDateData = {
             labels: {{ depart_dates|map(attribute=0)|list|tojson }},
             datasets: [{
@@ -153,6 +193,8 @@
             type: 'bar',
             data: departDateData,
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true
@@ -163,5 +205,4 @@
     </script>
 </body>
 </html>
-
 {% endblock %}

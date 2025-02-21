@@ -193,7 +193,7 @@ def listing(id):
     else:
         base_price = listing.economy_fair_cost
 
-    main_image_url = None
+    main_image_url = 'booking_image_not_found.jpg'
     for image in listing.listing_images:
         if image.main_image == 1:
             main_image_url = image.image_location
@@ -310,7 +310,7 @@ def filter_bookings():
     depart_location = data.get('depart_location', [])
     destination_location = data.get('destination_location', [])
     depart_date = data.get('date')
-    seat_type = data.get('seatType', 'economy')  # Default to economy
+    seat_type = data.get('seatType', 'economy')
     page = int(data.get('page', 1)) 
     per_page = 10  # How many listings show per page
 

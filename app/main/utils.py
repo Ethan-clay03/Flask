@@ -38,6 +38,21 @@ def calculate_discount(date):
     else:
         return 0, days_away
     
+    
+def calculate_refund_amount(amount_paid):
+    depart_date = datetime.strptime(date, '%Y-%m-%d')
+    today = datetime.now()
+    days_away = (depart_date - today).days
+
+    if 80 <= days_away <= 90:
+        return 25, days_away
+    elif 60 <= days_away <= 79:
+        return 15, days_away
+    elif 45 <= days_away <= 59:
+        return 10, days_away
+    else:
+        return 0, days_away
+    
 
 def pretty_time(unformatted_time, to_12_hour=True):
     if not isinstance(unformatted_time, (datetime, time)):

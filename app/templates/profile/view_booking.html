@@ -15,6 +15,9 @@
                             <p><strong>Departure Time:</strong> {{ booking.listing.depart_time }}</p>
                             <p><strong>Seat Type:</strong> {{ booking.seat_type.capitalize() }}</p>
                             <p><strong>Total Cost:</strong> £{{ booking.amount_paid }}</p>
+                            {% if booking.cancelled %}
+                            <p><strong>Cancellation Date:</strong> £{{ booking.cancelled_date }}</p>
+                            {% endif %}
                         </div>
                         <div class="col-md-6">
                             <p><strong>Destination Location:</strong> {{ booking.listing.destination_location }}</p>
@@ -22,11 +25,14 @@
                             <p><strong>Number of Seats:</strong> {{ booking.num_seats }}</p>
                             <p><strong>Cost Per Person:</strong> £{{ booking.amount_paid / booking.num_seats }}</p>
                             <p><strong>Cancelled:</strong> {{ 'Yes' if booking.cancelled else 'No' }}</p>
+                            {% if booking.cancelled %}
+                            <p><strong>Refunded Amount:</strong> £{{ booking.cancelled_refund }}</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="card shadow-sm">
+            <div class="card mb-4 shadow-sm">
                 <div class="card-body text-center">
                     <h3 class="card-title mb-4">Re-Download Booking Details</h3>
                     {% if booking.cancelled %}
@@ -47,6 +53,18 @@
                     {% endif %}
                 </div>
             </div>
+            {% if not booking.cancelled %}
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="card-title mb-4">Cancel Booking</h3>
+                        <div class="alert alert-info" role="alert">
+                            Need to cancel? Not a problem as you are x days away you are entitled to a x% refund! Your refunded amount will be £xx.x which
+                            will automatically be refunded to your card ending in 1234
+                        </div>
+                        <button type="button" class="btn btn-danger btn-lg mr-2">Cancel Booking</button>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

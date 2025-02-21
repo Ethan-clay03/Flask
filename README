@@ -83,11 +83,11 @@ to be fully setup.
 # Then run the following, if you are not on port 5000 you will need to force it with the '--port 5000' arg
 flask run   (Will run on 127.0.0.1:5000)
 
-# To apply database changes/run migrations
-flask db upgrade
-
 # Creating new migration file (for development)
 flask db migrate -m "Add age column to User model"
+
+# To apply database changes/run migrations
+flask db upgrade
 
 ##########################################
 #              Database Commands         #

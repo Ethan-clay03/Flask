@@ -11,7 +11,6 @@ class ListingImages(db.Model):
 
     id = db.Column(db.Integer(), nullable=False, primary_key=True)
     image_location = db.Column(db.String(255), nullable=False)
-    image_description = db.Column(db.String(255), nullable=True)
     main_image = db.Column(db.SmallInteger(), nullable=False)
     listing_id = db.Column(Integer, ForeignKey('listings.id'), nullable=False)
     listing = relationship("Listings", back_populates="listing_images")

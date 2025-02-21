@@ -85,3 +85,34 @@ class User(UserMixin, db.Model):
             return True
         
         return False
+
+    @classmethod
+    def update_user_details(cls, user_id, username, email):
+        # Ensure the user exists
+        user = cls.search_user_id(user_id)
+
+        if user:
+            user.username = username
+            user.email = email
+            db.session.commit()
+            return True
+        
+        return False
+
+
+    @classmethod
+    def get_role_counts(cls, roles=()):
+        from app.models import Role
+        result = []
+        if roles:
+            for role_name in roles:
+                role = Role.query.filter_by(name=role_name).first()
+                if role:
+                    count = cls.query.filter_by(role_id=role.id).count()
+                    result.append((role_name, count))
+        else:
+            all_roles = Role.query.all()
+            for role in all_roles:
+                count = cls.query.filter_by(role_id=role.id).count()
+                result.append((role.name, count))
+        return tuple(result)

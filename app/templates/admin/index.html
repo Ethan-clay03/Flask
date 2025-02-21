@@ -7,6 +7,7 @@
     <h2>Admin Panel</h2>
     
     <ul class="center">
+        <li><a class="button_1" href="{{ url_for('admin.reports') }}">Reports</a></li>
         <li><a class="button_1" href="{{ url_for('admin.manage_bookings') }}">Manage Bookings</a></li>
         <li><a class="button_1" href="{{ url_for('admin.manage_user_bookings') }}">Manage User Bookings</a></li>
         {% if g.is_super_admin %}

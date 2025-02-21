@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reporting</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center my-4">Reporting</h1>
+
+        <form method="get" action="{{ url_for('admin.reports') }}" class="form-inline mb-4">
+            <div class="form-group mx-sm-3 mb-2">
+                <label for="days" class="sr-only">Show results for the last</label>
+                <input type="number" class="form-control" id="days" name="days" value="{{ days }}" min="1" placeholder="Days">
+            </div>
+            <button type="submit" class="btn btn-primary mb-2">Update</button>
+        </form>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Revenue</h5>
+                        <p class="card-text">£ {{ total_revenue }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card text-white bg-danger mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Cancelled Bookings</h5>
+                        <p class="card-text">{{ cancelled_bookings }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <h3>Destination Locations</h3>
+                <canvas id="destinationChart" height="200"></canvas>
+            </div>
+            <div class="col-md-6 mb-4">
+                <h3>User Count</h3>
+                <canvas id="roleCountChart" height="200"></canvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <h3>Number of Seats Booked Per Day</h3>
+                <canvas id="seatsBookedChart" height="200"></canvas>
+            </div>
+            <div class="col-md-6 mb-4">
+                <h3>Depart Dates</h3>
+                <canvas id="departDateChart" height="200"></canvas>
+            </div>
+        </div>
+        </div>
+    <script>
+        // Destination Locations Pie Chart
+        var destinationData = {
+            labels: {{ destinations|map(attribute=0)|list|tojson }},
+            datasets: [{
+                label: 'Number of Bookings',
+                data: {{ destinations|map(attribute=1)|list|tojson }},
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        var ctx = document.getElementById('destinationChart').getContext('2d');
+        var destinationChart = new Chart(ctx, {
+            type: 'pie',
+            data: destinationData
+        });
+
+        // User Role Count Bar Chart
+        var roleCountData = {
+            labels: {{ user_counts|map(attribute=0)|list|tojson }},
+            datasets: [{
+                label: 'User Count',
+                data: {{ user_counts|map(attribute=1)|list|tojson }},
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        var ctx = document.getElementById('roleCountChart').getContext('2d');
+        var roleCountChart = new Chart(ctx, {
+            type: 'bar',
+            data: roleCountData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Number of Seats Booked Per Day Line Chart
+        var seatsBookedData = {
+            labels: {{ seats_booked_per_day|map(attribute=0)|list|tojson }},
+            datasets: [{
+                label: 'Number of Seats Booked',
+                data: {{ seats_booked_per_day|map(attribute=1)|list|tojson }},
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        var ctx = document.getElementById('seatsBookedChart').getContext('2d');
+        var seatsBookedChart = new Chart(ctx, {
+            type: 'bar',
+            data: seatsBookedData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Depart Dates Line Chart
+        var departDateData = {
+            labels: {{ depart_dates|map(attribute=0)|list|tojson }},
+            datasets: [{
+                label: 'Number of Departures',
+                data: {{ depart_dates|map(attribute=1)|list|tojson }},
+                backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                borderColor: 'rgba(255, 206, 86, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        var ctx = document.getElementById('departDateChart').getContext('2d');
+        var departDateChart = new Chart(ctx, {
+            type: 'bar',
+            data: departDateData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
+{% endblock %}

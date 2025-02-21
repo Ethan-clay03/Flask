@@ -69,3 +69,7 @@ class Bookings(UserMixin, db.Model):
             db.session.commit()
             return True
         return False
+    
+    @classmethod
+    def get_all_bookings(cls):
+        return cls.query.all()

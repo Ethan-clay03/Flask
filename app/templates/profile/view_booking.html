@@ -16,7 +16,7 @@
                             <p><strong>Seat Type:</strong> {{ booking.seat_type.capitalize() }}</p>
                             <p><strong>Total Cost:</strong> £{{ booking.amount_paid }}</p>
                             {% if booking.cancelled %}
-                            <p><strong>Cancellation Date:</strong> £{{ booking.cancelled_date }}</p>
+                            <p><strong>Cancellation Date:</strong> {{ booking.cancelled_date }}</p>
                             {% endif %}
                         </div>
                         <div class="col-md-6">
@@ -26,21 +26,34 @@
                             <p><strong>Cost Per Person:</strong> £{{ booking.amount_paid / booking.num_seats }}</p>
                             <p><strong>Cancelled:</strong> {{ 'Yes' if booking.cancelled else 'No' }}</p>
                             {% if booking.cancelled %}
-                            <p><strong>Refunded Amount:</strong> £{{ booking.cancelled_refund }}</p>
+                            <p><strong>Refunded Amount:</strong> £{{booking.refund_amount if booking.refund_amount else '0'}}</p>
                             {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
+
             <div class="card mb-4 shadow-sm">
                 <div class="card-body text-center">
                     <h3 class="card-title mb-4">Re-Download Booking Details</h3>
+
                     {% if booking.cancelled %}
                         <div class="alert alert-danger" role="alert">
-                            This booking has been cancelled. Download options are no longer available
+                            This booking has been cancelled. Download options are no longer available.
                         </div>
                         <button type="button" class="btn btn-success btn-lg mr-2" disabled>Download Receipt</button>
                         <button type="button" class="btn btn-primary btn-lg" disabled>Download Plane Ticket</button>
+                    
+                    {% elif departed == True %}
+                        <div class="alert alert-warning" role="alert">
+                            This booking has already taken place.
+                        </div>
+                        <div class="d-flex justify-content-center">
+                            <form action="{{ url_for('bookings.generate_receipt', id=booking.id) }}" method="get" class="d-inline">
+                                <button type="submit" class="btn btn-success btn-lg mr-2">Download Receipt</button>
+                            </form>
+                        </div>
+
                     {% else %}
                         <div class="d-flex justify-content-center">
                             <form action="{{ url_for('bookings.generate_receipt', id=booking.id) }}" method="get" class="d-inline">
@@ -53,17 +66,27 @@
                     {% endif %}
                 </div>
             </div>
-            {% if not booking.cancelled %}
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                    <h3 class="card-title mb-4">Cancel Booking</h3>
+
+            {% if not booking.cancelled and not departed == True %}
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="card-title mb-4">Cancel Booking</h3>
                         <div class="alert alert-info" role="alert">
-                            Need to cancel? Not a problem as you are x days away you are entitled to a x% refund! Your refunded amount will be £xx.x which
-                            will automatically be refunded to your card ending in 1234
+                            {% if refund['percentage'] == 0 %}
+                                Cancelling now will not provide a refund as you are within the non-refundable period.
+                            {% else %}
+                                Need to cancel? Since you are {{ days_until_departure }} days away, you are entitled to a {{ refund['percentage'] }}% refund! 
+                                Your refunded amount will be £{{ refund['amount'] }}, which will automatically be refunded to your card ending in {{ booking.last_four_card_nums }}.
+                            {% endif %}
                         </div>
-                        <button type="button" class="btn btn-danger btn-lg mr-2">Cancel Booking</button>
+                        <form action="{{ url_for('bookings.cancel_booking', id=booking.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger btn-lg mr-2">
+                                Cancel Booking
+                            </button>
+                        </form>
+                    </div>
                 </div>
-            </div>
             {% endif %}
         </div>
     </div>

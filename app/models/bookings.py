@@ -15,6 +15,7 @@ class Bookings(UserMixin, db.Model):
     num_seats = db.Column(db.Integer, nullable=False)
     cancelled = db.Column(db.Boolean, default=False)
     cancelled_date = db.Column(db.Date, nullable=False)
+    refund_amount = db.Column(db.Float, nullable=False)
     booking_date = db.Column(db.Date, nullable=False)
     depart_date = db.Column(db.Date, nullable=False)
     last_four_card_nums = db.Column(db.String(4), nullable=False)
@@ -61,11 +62,12 @@ class Bookings(UserMixin, db.Model):
         return booking is not None
     
     @classmethod
-    def cancel_booking(cls, booking_id):
+    def cancel_booking(cls, booking_id, refund_amount = 0):
         booking = cls.query.get(booking_id)
         if booking:
             booking.cancelled = True
             booking.cancelled_date = datetime.utcnow().date()
+            booking.refund_amount = refund_amount
             db.session.commit()
             return True
         return False

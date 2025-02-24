@@ -1,7 +1,7 @@
 # utils.py
 
 from flask import current_app
-from datetime import time, datetime
+from datetime import time, datetime, date
 from datetime import datetime 
 from fpdf import FPDF
 import barcode
@@ -10,7 +10,7 @@ from PyPDF2 import PdfMerger
 from io import BytesIO
 import os
 from PIL import Image
-from pystrich.datamatrix import DataMatrixEncoder, DataMatrixRenderer
+from pystrich.datamatrix import DataMatrixEncoder
 
 def allowed_image_files(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
@@ -39,22 +39,20 @@ def calculate_discount(date):
         return 0, days_away
     
     
-def calculate_refund_amount(amount_paid):
-    depart_date = datetime.strptime(date, '%Y-%m-%d')
-    today = datetime.now()
-    days_away = (depart_date - today).days
+def calculate_refund_amount(booking):
+    days_until_departure = get_days_until_departure(booking)
 
-    if 80 <= days_away <= 90:
-        return 25, days_away
-    elif 60 <= days_away <= 79:
-        return 15, days_away
-    elif 45 <= days_away <= 59:
-        return 10, days_away
+    if days_until_departure  < 30:
+        return 0, 0   # 0%
+    elif 30 <= days_until_departure  < 60:
+        return booking.amount_paid * 0.6, 60   # 60% refund
     else:
-        return 0, days_away
+        return booking.amount_paid, 100   # 100% refund
     
 
 def pretty_time(unformatted_time, to_12_hour=True):
+    if unformatted_time == None:
+        return None
     if not isinstance(unformatted_time, (datetime, time)):
         unformatted_time = datetime.strptime(unformatted_time, "%H:%M:%S")
     
@@ -66,18 +64,12 @@ def pretty_time(unformatted_time, to_12_hour=True):
     
     return formatted_time
 
-
+def get_days_until_departure(booking):
+    today = datetime.now().date()
+    return (booking.depart_date - today).days
 
 def get_static_files(*path_parts):
     return os.path.join(current_app.root_path, 'static', *path_parts)
-
-import os
-import tempfile
-from PyPDF2 import PdfMerger
-from PIL import Image
-import barcode
-from barcode.writer import ImageWriter
-from pystrich.datamatrix import DataMatrixEncoder, DataMatrixRenderer
 
 def create_receipt(booking, listing):
     formatted_depart_date = booking.depart_date.strftime('%d-%m-%Y')

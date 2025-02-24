@@ -3,7 +3,7 @@ from app.bookings import bp
 from app.models import Listings, Bookings, ListingAvailability
 from app import db
 from app.logger import error_logger
-from app.main.utils import calculate_discount, pretty_time, create_receipt, create_plane_ticket
+from app.main.utils import calculate_discount, pretty_time, create_receipt, create_plane_ticket, calculate_refund_amount
 import json
 from datetime import datetime
 from app import user_permission, permission_required
@@ -424,3 +424,21 @@ def get_user_bookings():
     ]
     
     return jsonify(result)
+
+
+@bp.route('/cancel_booking/<int:id>', methods=['POST'])
+@permission_required(user_permission)
+def cancel_booking(id):
+    if not id:
+        flash('Unable to cancel booking', 'error')
+        return redirect(url_for('bookings.manage_bookings'))
+    
+    booking = Bookings.search_booking(id)
+    cancel_amount, cancel_percentage = calculate_refund_amount(booking)
+    success = Bookings.cancel_booking(id, cancel_amount)
+    if success:
+        flash('Your booking has been successfully cancelled. If you are entitled to a refund this will be refunded to your payment card', 'success')
+        return redirect(url_for('profile.manage_bookings'))
+    else:
+        flash('Unable to cancel booking, please try again', 'error')
+        return redirect(url_for('profile.manage_profile_view_booking', id=id))

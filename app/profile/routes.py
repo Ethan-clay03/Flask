@@ -4,7 +4,7 @@ from flask_principal import Identity, identity_changed
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 from app.profile import bp
-from app.main.utils import pretty_time, calculate_refund_amount
+from app.main.utils import pretty_time, calculate_refund_amount, get_days_until_departure
 from app.models import User, Bookings, Listings
 from app.logger import auth_logger
 from app import db, permission_required, user_permission
@@ -260,33 +260,22 @@ def manage_profile():
     return render_template('profile/manage_profile.html', user=user)
 
 
-@bp.route('/cancel_booking', methods=['POST'])
-@permission_required(user_permission)
-def cancel_booking():
-    data = request.get_json()
-    booking_id = data.get('booking_id')
-    if not booking_id:
-        return jsonify({'error': 'Missing booking_id'}), 400
-    
-    success = Bookings.cancel_booking(booking_id)
-    if success:
-        return jsonify({'message': 'Booking cancelled successfully'}), 200
-    else:
-        return jsonify({'error': 'Failed to cancel booking'}), 400
-
-
 @bp.route('/manage_bookings/view/<int:id>')
 def manage_profile_view_booking(id):
 
     booking = Bookings.search_booking(id)
     booking.listing.destination_time = pretty_time(booking.listing.destination_time)
     booking.listing.depart_time = pretty_time(booking.listing.depart_time)
-    booking.cancelled_date = pretty_time(booking.cancelled_date)
     
-    cancel_amount, cancel_percentage = calculate_refund_amount()
+    days_until_departure  = get_days_until_departure(booking)
+    cancel_amount, cancel_percentage = calculate_refund_amount(booking)
     refund = {
-        amount: 
-        percentage:
+        'amount': cancel_amount,
+        'percentage': cancel_percentage
     }
+
+    departed = False
+    if days_until_departure < 0:
+        departed = True
     
-    return render_template('profile/view_booking.html', booking=booking)
+    return render_template('profile/view_booking.html', booking=booking, refund=refund, days_until_departure=days_until_departure, departed=departed)

@@ -161,7 +161,7 @@ def create_app(config_class=Config):
     def handle_exception(e):
         app.logger.error(f"Unhandled exception: {e}")
         session['error_message'] = str(e)
-        return redirect(url_for('errors.quandary'))
+        return redirect(url_for('errors.error'))
 
     @app.errorhandler(403)
     def handle_exception(e):

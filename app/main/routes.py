@@ -24,9 +24,14 @@ def index():
 
 @bp.route('/uploads/listing_images/<filename>')
 def upload_file(filename):
-    
-    upload_folder = os.path.join(os.getcwd(), 'app/uploads')
-    return send_from_directory(upload_folder, f'listing_images/{filename}')
+    try:
+        upload_folder = os.path.join(os.getcwd(), 'app/uploads')
+        file_directory = send_from_directory(upload_folder, f'listing_images/{filename}')
+    except:
+        #Fall back for when image is not associated with a booking
+        file_directory = send_from_directory(upload_folder, f'listing_images/booking_image_not_found.jpg')
+        app_logger.debug(f"Can't find {filename} within uploads folder")
+    return file_directory
 
 # Should only be used by ajax calls
 @bp.route('/log_message', methods=['POST'])

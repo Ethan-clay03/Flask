@@ -1,7 +1,7 @@
 # utils.py
 
 from flask import current_app
-from datetime import time, datetime, date
+from datetime import time, datetime
 from datetime import datetime 
 from fpdf import FPDF
 import barcode
@@ -11,6 +11,7 @@ from io import BytesIO
 import os
 from PIL import Image
 from pystrich.datamatrix import DataMatrixEncoder
+import tempfile 
 
 def allowed_image_files(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']

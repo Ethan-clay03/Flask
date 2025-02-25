@@ -6,7 +6,7 @@
         <p class="lead">Your payment has been processed successfully.</p>
         <p>Click the buttons below to download your receipt and plane ticket:</p>
         <div class="mt-4">
-            <form action="{{ url_for('bookings.generate_receipt', id=id) }}" method="get" class="d-inline">
+            <form action="{{ url_for('bookings.generate_receipt', id=id) }}" method="get" class="d-inline" style="margin-right: 25px;">
                 <button type="submit" class="btn btn-success btn-lg">Download Receipt</button>
             </form>
             <form action="{{ url_for('bookings.generate_ticket', id=id) }}" method="get" class="d-inline">

@@ -27,10 +27,14 @@ def upload_file(filename):
     try:
         upload_folder = os.path.join(os.getcwd(), 'app/uploads')
         file_directory = send_from_directory(upload_folder, f'listing_images/{filename}')
-    except:
-        #Fall back for when image is not associated with a booking
+    except FileNotFoundError as e:
+        app_logger.debug(f"FileNotFoundError: {e}")
         file_directory = send_from_directory(upload_folder, f'listing_images/booking_image_not_found.jpg')
-        app_logger.debug(f"Can't find {filename} within uploads folder")
+    except Exception as e:
+        app_logger.debug(f"General Exception: {e}")
+        file_directory = send_from_directory(upload_folder, f'listing_images/booking_image_not_found.jpg')
+    except OSError as e:
+        pass
     return file_directory
 
 # Should only be used by ajax calls

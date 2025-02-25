@@ -1,4 +1,5 @@
 from flask import render_template, redirect, url_for, request, jsonify, session, flash, g, send_file
+from flask_login import current_user
 from app.bookings import bp
 from app.models import Listings, Bookings, ListingAvailability
 from app import db
@@ -390,6 +391,8 @@ def generate_ticket(id):
 @permission_required(user_permission)
 def get_user_bookings():
     query = db.session.query(Bookings).join(Listings)
+    
+    query = query.filter(Bookings.user_id == current_user.id)
 
     depart_location = request.args.get('depart_location')
     destination_location = request.args.get('destination_location')

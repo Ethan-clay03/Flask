@@ -127,6 +127,7 @@ def create_app(config_class=Config):
             else:
                 auth_logger.debug(f'No role found for user {identity.user.username}.')
 
+
     # Add global template variables
     @app.context_processor
     def set_global_html_variable_values():
@@ -150,6 +151,7 @@ def create_app(config_class=Config):
                 'user_permission': g.user_permission,
                 'super_admin_permission': g.super_admin_permission
             }
+
     
     # Prevent site being loaded using iFrames
     @app.after_request
@@ -157,17 +159,20 @@ def create_app(config_class=Config):
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
         return response
 
+
     @app.errorhandler(Exception)
     def handle_exception(e):
         app.logger.error(f"Unhandled exception: {e}")
         session['error_message'] = str(e)
         return redirect(url_for('errors.error'))
 
+
     @app.errorhandler(403)
     def handle_exception(e):
         app.logger.debug(f"Unauthorized: {e}")
         session['error_message'] = str(e)
         return redirect(url_for('errors.no_permission'))
+
 
     @app.before_request
     def before_request():

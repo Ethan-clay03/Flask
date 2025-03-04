@@ -96,7 +96,6 @@ def create_app(config_class=Config):
     db_user = os.getenv("DATABASE_USER")
     db_password = os.getenv("DATABASE_PASSWORD")
     db_name = os.getenv("DATABASE_NAME")
-    
     create_database_if_not_exists(db_host, db_user, db_password, db_name)
     
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')

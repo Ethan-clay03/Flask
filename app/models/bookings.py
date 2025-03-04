@@ -3,6 +3,7 @@ from flask_login import UserMixin
 from app.logger import error_logger
 from datetime import datetime
 from sqlalchemy.orm import relationship
+from app.models import User
 
 class Bookings(UserMixin, db.Model):
     __tablename__ = 'bookings'
@@ -75,3 +76,10 @@ class Bookings(UserMixin, db.Model):
     @classmethod
     def get_all_bookings(cls):
         return cls.query.all()
+    
+    @classmethod
+    def get_all_bookings_with_user_table(cls):
+        return cls.query.join(User, cls.user_id == User.id).add_columns(
+            User.username
+        ).all()
+

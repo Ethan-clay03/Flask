@@ -94,7 +94,9 @@ def manage_users():
 @bp.route('/manage_user_bookings')
 @permission_required(admin_permission)
 def manage_user_bookings():
-    return render_template('admin/index.html')
+    bookings = Bookings.get_all_bookings_with_user_table()
+    locations = Listings.get_all_locations(True)
+    return render_template('admin/manage_user_bookings.html', bookings=bookings, locations=locations)
 
 
 @bp.route('update_booking/<int:id>', methods=['POST'])

@@ -194,7 +194,6 @@ def check_password_reset_2():
 
 
 @bp.route('/password-reset/reset-password')
-@permission_required(user_permission)
 def password_reset_3():
     return render_template('profile/password-reset-3.html')
 

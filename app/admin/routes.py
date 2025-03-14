@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.sql import text
 from app import admin_permission, permission_required, super_admin_permission, db
 from app.models import Listings, ListingImages, User, Bookings, Role
-from app.main.utils import generate_time_options
+from app.main.utils import generate_time_options, pretty_time, get_days_until_departure, calculate_refund_amount
 from app.admin import bp
 
 
@@ -22,6 +22,28 @@ def home():
 def manage_bookings():
     locations = Listings.get_all_locations(True)
     return render_template('admin/manage_bookings.html', locations=locations)
+
+
+@bp.route('/manage_bookings/view/<int:id>')
+@permission_required(admin_permission)
+def admin_view_user_booking(id):
+    booking = Bookings.search_booking(id)
+    booking.listing.destination_time = pretty_time(booking.listing.destination_time)
+    booking.listing.depart_time = pretty_time(booking.listing.depart_time)
+    
+    days_until_departure  = get_days_until_departure(booking)
+    cancel_amount, cancel_percentage = calculate_refund_amount(booking)
+    refund = {
+        'amount': cancel_amount,
+        'percentage': cancel_percentage
+    }
+
+    departed = False
+    if days_until_departure < 0:
+        departed = True
+    
+    return render_template('profile/view_booking.html', booking=booking, refund=refund, days_until_departure=days_until_departure, departed=departed)
+
 
 @bp.route('/manage_bookings/edit/<int:id>')
 @permission_required(admin_permission)

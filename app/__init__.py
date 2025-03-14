@@ -1,4 +1,4 @@
-from flask import Flask, g, abort, request, session, redirect, url_for
+from flask import Flask, g, abort, request, session, redirect, url_for, current_app
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -158,7 +158,19 @@ def create_app(config_class=Config):
         response.headers['X-Frame-Options'] = 'SAMEORIGIN'
         return response
 
+    @app.errorhandler(404)
+    def handle_exception(e):
+        # Create tuple of ignored url endings. Can add other whitelisted files, perhaps .js?
+        allowed_extensions = tuple(current_app.config['ALLOWED_EXTENSIONS'] | {'ico'})
+        
+        if any(request.path.endswith(ext) for ext in allowed_extensions):
+            return "", 404
+        else:
+            app.logger.error(f"Page not found: {request.path}")
+            session['error_message'] = f"Page not found: {request.path}"
+            return redirect(url_for('errors.error'))
 
+    
     @app.errorhandler(Exception)
     def handle_exception(e):
         app.logger.error(f"Unhandled exception: {e}")

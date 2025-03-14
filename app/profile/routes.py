@@ -262,7 +262,9 @@ def manage_profile():
 
 @bp.route('/manage_bookings/view/<int:id>')
 def manage_profile_view_booking(id):
-
+    if not Bookings.check_booking_user_ids_match(id, current_user.id):
+        flash('The booking you are trying to access is not associated with your account.', 'error')
+        return redirect(url_for('profile.manage_bookings'))
     booking = Bookings.search_booking(id)
     booking.listing.destination_time = pretty_time(booking.listing.destination_time)
     booking.listing.depart_time = pretty_time(booking.listing.depart_time)

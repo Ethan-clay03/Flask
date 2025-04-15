@@ -1,37 +1,32 @@
-## PLEASE READ ALL SETUP INSTRUCTIONS CAREFULLY AND IN FULL
+# ⚠️ IMPORTANT NOTICE — PLEASE READ CAREFULLY
 
+🚫 **This repository is intended for viewing purposes only. Any direct copying or reproduction of the code, layout, or any part of this project is strictly prohibited.**
 
-## IMPORTANT, PLEASE READ THE BELOW BEFORE USING THE PROJECT
+📚 **If you're a student**: Using this code in your own assignments may be considered academic dishonesty by UWE. This project is provided to **demonstrate how a Flask site can be structured** and how more complex Flask functionality can be implemented.
 
-## Important Notice
+📄 **License**  
+This repository is strictly **read-only**. Unauthorized copying, reproduction, or distribution of any part of this project is **strictly prohibited**.  
+By continuing to view or interact with this repository, **you accept these terms.**
 
-**Please be aware that this repository is intended for viewing purposes only. Any direct copying or reproduction of the code, layout, or any other part of this project is strictly prohibited.**
+---
 
-This repository is solely provided to help aid in how a flask site can be set out and how more complex flask functionality can be used.
-If you are a student, copying or reproducing this work in your own assignments or projects will likely be considered academic dishonesty by
-UWE and I will not accept any fault for your failure to ensure your own work is unique.
+## 📬 Contact
 
-## License
+If you have questions or would like to discuss this project further, please feel free to reach out.
 
-This repository is for viewing purposes only. Unauthorized copying, reproduction, or distribution of any part of this project is strictly prohibited. By continuing to view this repository you accept these terms.
+---
 
-## Contact
+## 🚀 Getting Started
 
-If you have any questions or would like to discuss this project further, please feel free to reach out.
+You can run the project locally using **Docker (recommended)** or manually with Python/Flask (advanced). Docker will set up everything automatically, including the database and test data.
 
-## Updates and planned changes
-All updates and planned changes are made via a public Trello which tracks what tasks are done and are a work in progress
-https://trello.com/b/WILg5Qio/flask-website
+---
 
+## 🐳 Docker Setup (Recommended)
 
-
-## Getting setup
-
-If you wish to try out the site locally you are able to do so using Docker, using docker will automatically create a Flask and database instance with test data. 
-Alternatively you can use the provided commands to load the site components but this may result in troubleshooting to get setup on your machine depending on installed
-dependancies. I will NOT assist in getting it running locally (I have only tested all instructions on Windows 10 and unsure if Mac or Linux will work as expected).
-
-
+### ✅ Prerequisites
+- Install [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- Navigate to the root of the project directory
 
 ##########################################
 #           Docker Commands              #
@@ -40,7 +35,6 @@ dependancies. I will NOT assist in getting it running locally (I have only teste
 # Before running any commands you will need to copy the .env-example file and rename the copy to .env . Once done change the 
 # environment variables to whatever you would like. You can use these details to connect to your own database at localhost:{PORT}
 
-# Install Docker desktop https://www.docker.com/products/docker-desktop/
 # Once done the above steps. Navigate to the app directory within your terminal.
 # Simply run `docker compose up -d` (The -d means you can continue to use the terminal after the command has executed)
 # Running this command will also create a database schema, use the details below to login to the site, and then use the .env variables for the database connection

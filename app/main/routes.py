@@ -1,8 +1,7 @@
-from flask import render_template, send_from_directory, request, jsonify
+from flask import render_template, send_from_directory, request, jsonify, session
 from app.models import Listings, ListingImages
 from app.main import bp
 from app.logger import *
-import datetime
 import os
 
 @bp.route('/')
@@ -61,7 +60,16 @@ def log_message():
         return jsonify({'success': True, 'message': 'Log message recorded'})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
-    
+
+@bp.route('/accept-cookies', methods=['POST'])
+def accept_cookies():
+    session['cookies_accepted'] = True
+    if request.is_json:
+        data = request.get_json()
+        session['analytics_cookies'] = data.get('analytics', False)
+    else:
+        session['analytics_cookies'] = True
+    return jsonify(success=True)   
 
 @bp.route('/about_us')
 def about_us():

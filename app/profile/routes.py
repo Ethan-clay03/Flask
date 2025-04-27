@@ -39,7 +39,11 @@ def signup():
             db.session.add(new_user)
             db.session.commit()
 
-            login_user(new_user)
+            remember = True if request.form.get('remember') else False
+            login_user(new_user, remember=remember)
+            
+            # User identity has changed, need to force update
+            identity_changed.send(current_app._get_current_object(), identity=Identity(new_user.id))
 
             if 'callback' in session.keys():
                 callback = session.pop('callback')

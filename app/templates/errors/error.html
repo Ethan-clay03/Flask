@@ -6,7 +6,7 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 </head>
 <div class="quandary-div">
-    <h1>Something went wrong</h1>
+    <h1>{{error_header}}</h1>
     <div class="container">
         <div><span>{{ error_message }}</span></div>
         <div class="button_2" onclick="history.back()">

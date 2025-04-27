@@ -167,6 +167,8 @@ def create_app(config_class=Config):
             return "", 404
         else:
             app.logger.error(f"Page not found: {request.path}")
+            session['error_header'] = 'Unable to find requested page'
+            session['generic_error_message'] = f"Page not found: {request.path}"
             session['error_message'] = f"Page not found: {request.path}"
             return redirect(url_for('errors.error'))
 
@@ -174,14 +176,18 @@ def create_app(config_class=Config):
     @app.errorhandler(Exception)
     def handle_exception(e):
         app.logger.error(f"Unhandled exception: {e}")
+        session['error_header'] = 'Something unexpected happened'
         session['error_message'] = str(e)
+        session['generic_error_message'] = 'Something went wrong, if this continues please contact support'
         return redirect(url_for('errors.error'))
 
 
     @app.errorhandler(403)
     def handle_exception(e):
         app.logger.debug(f"Unauthorized: {e}")
+        session['error_header'] = "You don't have permission to view this resource"
         session['error_message'] = str(e)
+        session['generic_error_message'] = f"You don't have permission to view the {request.endpoint} endpoint. If you believe this is in error contact support."
         return redirect(url_for('errors.no_permission'))
 
 

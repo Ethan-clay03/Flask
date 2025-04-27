@@ -20,7 +20,7 @@
                 <td><img src="{{ item.main_image_url }}" class="main-image" alt="Main Image" onclick="event.stopPropagation(); showModal({{ item.image_urls | safe }});"></td>
                 <td>{{ item.depart_location }}</td>
                 <td>
-                    {% if discount > 0 %}
+                    {% if discount > 0 %} 
                     <span style="text-decoration: line-through;">&pound; {{ item.original_cost }}</span>
                     <span>&pound; {{ item.discounted_cost }}</span>
                     {% else %}
